@@ -1,96 +1,148 @@
---!strict
--- Filename: Core.lua
+--[[ 
+    FILENAME: Core.lua
+    Deskripsi: Controller Logika Game
+]]
 
-local Owner = "XbayyGod"
+local Owner = "XbayyGod" -- Ganti nama lu
 local Repo = "Werskieee"
 local Branch = "main"
 
-local function GetUrl(scriptName)
-    return string.format("https://raw.githubusercontent.com/%s/%s/%s/%s", Owner, Repo, Branch, scriptName)
+-- --- [ LOAD LIBRARY ] ---
+-- Kalau belum punya link GitHub, pake loadstring lokal atau pastebin sementara.
+-- Contoh: local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/User/Repo/main/UIManager.lua"))()
+
+-- UNTUK TEST LOKAL (Kalau UIManager dan Core dijalanin di satu script):
+-- Anggap variabel 'Library' sudah ada dari script di atas jika digabung.
+-- Tapi kalau dipisah file, pastikan loadstring UIManager dijalankan dulu.
+
+-- Simulasi Load (Ganti ini nanti pake link Github UIManager.lua lu)
+local Library = loadstring(game:HttpGet("LINK_RAW_UIMANAGER.LUA_LU_DISINI"))()
+
+local Window = Library:CreateWindow("SansMobaHub | V2 Remake")
+
+-- --- [ SERVICES & VARIABLES ] ---
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net")
+
+-- Remote Events
+local rodRemote = net:WaitForChild("RF/ChargeFishingRod")
+local miniGameRemote = net:WaitForChild("RF/RequestFishingMinigameStarted")
+local finishRemote = net:WaitForChild("RE/FishingCompleted")
+local equipRemote = net:WaitForChild("RE/EquipToolFromHotbar")
+
+-- --- [ TAB 1: FISHING ] ---
+local TabFish = Window:AddTab("Fishing")
+
+TabFish:AddSection("Main Features")
+
+local isAutoFishing = false
+local function StartAutoFish()
+    equipRemote:FireServer(1) -- Pastikan Rod di Slot 1
+    isAutoFishing = true
+    task.spawn(function()
+        while isAutoFishing do
+            pcall(function()
+                rodRemote:InvokeServer(workspace:GetServerTimeNow())
+                task.wait(0.1)
+                miniGameRemote:InvokeServer(-1.25, 1.0, workspace:GetServerTimeNow())
+                task.wait(1.5) -- Delay animasi
+                finishRemote:FireServer()
+            end)
+            task.wait(0.2)
+        end
+    end)
 end
 
-local UIManager = loadstring(game:HttpGet(GetUrl("UIManager.lua")))()
-local UI = UIManager.new()
-
--- --- [ SETUP WINDOW ] ---
-local Window = UI:MakeWindow({
-    Name = "Werskieee Hub | PREMIUM V2",
-    Size = UDim2.new(0, 600, 0, 500) -- Agak gedean dikit biar muat list
-})
-
--- --- [ TAB SCANNER (LOGIC BARU) ] ---
-local ScannerTab = Window:MakeTab({Name = "Scanner"})
-
-local targetName = ""
-local targetPath = workspace
-
-ScannerTab:AddLabel("--- CONFIG SCANNER ---")
-
--- 1. Input Nama yang mau dicari
-ScannerTab:AddInput("Cari Nama Value", "cth: Cash/Price/Speed...", function(text)
-    targetName = text
+TabFish:AddToggle("Enable Auto Fish 5X", false, function(val)
+    if val then
+        StartAutoFish()
+    else
+        isAutoFishing = false
+        -- Optional: Cancel fishing remote
+        local cancel = net:FindFirstChild("RF/CancelFishingInputs")
+        if cancel then cancel:InvokeServer() end
+    end
 end)
 
--- 2. Tombol Eksekusi
-ScannerTab:AddButton("SCAN SEKARANG", function()
-    -- Hapus hasil scan lama (Perlu update UIManager step 1 tadi)
-    if ScannerTab.Clear then
-        ScannerTab:Clear()
-    else
-        -- Fallback kalau lupa update UIManager
-        ScannerTab:AddLabel("⚠️ WARNING: Fitur Clear belum dipasang di UIManager!")
-        ScannerTab:AddLabel("--- SCAN BARU ---")
+TabFish:AddButton("Sell All Fish", function()
+    local sell = net:FindFirstChild("RF/SellAllItems")
+    if sell then 
+        sell:InvokeServer() 
+        print("Sold all fish!")
     end
+end)
 
-    -- Balikin Config UI (Karena kehapus pas Clear)
-    ScannerTab:AddLabel("Hasil Scan untuk: " .. targetName)
-    
-    local foundCount = 0
+-- --- [ TAB 2: TELEPORTS ] ---
+local TabTP = Window:AddTab("Teleport")
+TabTP:AddSection("Island Teleport")
 
-    -- Mulai Deep Scan
-    for _, v in pairs(targetPath:GetDescendants()) do
-        -- Cek apakah dia tipe Value (Angka/Text) DAN namanya cocok
-        if (v:IsA("IntValue") or v:IsA("NumberValue") or v:IsA("StringValue")) 
-           and string.find(v.Name:lower(), targetName:lower()) then
-            
-            foundCount = foundCount + 1
-            
-            -- [LOGIC UTAMA] 
-            -- Bikin Input Box KHUSUS buat item ini doang
-            -- Label: Nama Item + Value Asli
-            -- Action: Ubah Value item INI SAJA
-            
-            local labelInfo = v.Name .. " (" .. tostring(v.Value) .. ")"
-            
-            ScannerTab:AddInput(labelInfo, "Isi value baru...", function(newValue)
-                -- Cek tipe data biar gak error
-                if v:IsA("IntValue") or v:IsA("NumberValue") then
-                    local num = tonumber(newValue)
-                    if num then
-                        v.Value = num
-                        print("✅ Berhasil ubah " .. v.Name .. " jadi " .. num)
-                    end
-                else
-                    -- Kalau StringValue
-                    v.Value = newValue
-                    print("✅ Berhasil ubah text " .. v.Name)
-                end
-            end)
+local Islands = {
+    ["Crater Island"] = Vector3.new(968, 1, 4854),
+    ["Coral Reefs"] = Vector3.new(-3095, 1, 2177),
+    ["Tropical Grove"] = Vector3.new(-2038, 3, 3650),
+    ["Vulcano"] = Vector3.new(-701, 48, 93),
+    ["Winter"] = Vector3.new(2036, 6, 3381)
+}
+
+-- Bikin list nama buat dropdown
+local islandNames = {}
+for name, _ in pairs(Islands) do table.insert(islandNames, name) end
+
+TabTP:AddDropdown("Select Island", islandNames, function(selected)
+    local pos = Islands[selected]
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and pos then
+        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(pos + Vector3.new(0,5,0))
+    end
+end)
+
+-- --- [ TAB 3: PLAYER ] ---
+local TabPlayer = Window:AddTab("Player")
+
+TabPlayer:AddInput("Set WalkSpeed", "Default: 16", function(text)
+    local num = tonumber(text)
+    if num and LocalPlayer.Character then
+        LocalPlayer.Character.Humanoid.WalkSpeed = num
+    end
+end)
+
+TabPlayer:AddInput("Set JumpPower", "Default: 50", function(text)
+    local num = tonumber(text)
+    if num and LocalPlayer.Character then
+        LocalPlayer.Character.Humanoid.UseJumpPower = true
+        LocalPlayer.Character.Humanoid.JumpPower = num
+    end
+end)
+
+TabPlayer:AddToggle("Infinity Jump", false, function(val)
+    _G.InfJump = val
+end)
+
+game:GetService("UserInputService").JumpRequest:Connect(function()
+    if _G.InfJump and LocalPlayer.Character then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+    end
+end)
+
+-- --- [ TAB 4: MISC ] ---
+local TabMisc = Window:AddTab("Misc")
+
+TabMisc:AddButton("FPS Boost (Low GFX)", function()
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v:IsA("BasePart") and not v.Parent:FindFirstChild("Humanoid") then
+            v.Material = Enum.Material.SmoothPlastic
+            v.CastShadow = false
         end
     end
-
-    if foundCount == 0 then
-        ScannerTab:AddLabel("❌ Tidak ditemukan object bernama: " .. targetName)
-    else
-        ScannerTab:AddLabel("✅ Ditemukan: " .. foundCount .. " items.")
-        ScannerTab:AddLabel("Ketik angka di kotak & Enter utk ubah.")
-    end
-    
-    -- Tombol Reset biar user bisa scan lagi tanpa restart script
-    ScannerTab:AddButton("Reset / Scan Lagi", function()
-        -- Ini trik visual doang, aslinya cuma manggil function scan lagi ntar
-        -- Tapi user biasanya klik tombol scan yg di atas lagi
-    end)
 end)
 
-print(":: Werskieee Scanner Loaded ::")
+TabMisc:AddButton("Fullbright", function()
+    local L = game:GetService("Lighting")
+    L.Brightness = 2
+    L.ClockTime = 14
+    L.GlobalShadows = false
+    L.FogEnd = 9e9
+end)
+
+print(":: SansMobaHub Loaded ::")
