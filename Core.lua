@@ -39,33 +39,39 @@ TabFish:AddSection("Main Features")
 
 local isAutoFishing = false
 local function StartAutoFish()
-    equipRemote:FireServer(1) -- Pastikan Rod di Slot 1
+    equipRemote:FireServer(1) -- Equip Rod
     isAutoFishing = true
     
     task.spawn(function()
         while isAutoFishing do
-            -- Kita bungkus pakai pcall biar kalau error satu, loop gak mati
-            pcall(function()
+            -- Pake pcall biar script ga putus kalau server ngelag
+            local success, err = pcall(function()
                 
-                -- [LOGIC 5X BARU]
-                -- Pakai task.spawn di dalam biar perintahnya langsung jalan barengan
-                -- Gak nunggu-nungguan lagi (Asynchronous)
+                -- 1. Lempar Joran (Wajib tunggu server respon/Invoke)
+                rodRemote:InvokeServer(workspace:GetServerTimeNow())
                 
-                task.spawn(function()
-                    rodRemote:InvokeServer(workspace:GetServerTimeNow())
-                end)
+                -- 2. Jeda Lempar -> Minigame (0.5 detik cukup)
+                -- Kalau kekecilan, minigame belum spawn di server
+                task.wait(0.6) 
                 
-                task.spawn(function()
-                    miniGameRemote:InvokeServer(-1.25, 1.0, workspace:GetServerTimeNow())
-                end)
+                -- 3. Main Minigame (Auto Perfect)
+                miniGameRemote:InvokeServer(-1.25, 1.0, workspace:GetServerTimeNow())
                 
-                -- Langsung tembak finish tanpa basa-basi
+                -- 4. Jeda "Narik" (KRUSIAL)
+                -- Kalau ini 0, server nolak. Kita kasih 1.5 detik (Masih ngebut dibanding normal 5-8 detik)
+                task.wait(1.5)
+                
+                -- 5. Klaim Ikan
                 finishRemote:FireServer()
             end)
+
+            if not success then
+                warn("Fishing Error (Lag/Cooldown):", err)
+                task.wait(1) -- Kalau error, istirahat sedetik biar ga kick
+            end
             
-            -- Jeda super singkat (0.05 detik) biar server masih sempet napas dikit
-            -- Kalau masih kurang cepet, ganti jadi task.wait() aja (tanpa angka)
-            task.wait(0.05)
+            -- Reset Loop
+            task.wait(0.1)
         end
     end)
 end
