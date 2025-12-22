@@ -9,104 +9,88 @@ local function GetUrl(scriptName)
     return string.format("https://raw.githubusercontent.com/%s/%s/%s/%s", Owner, Repo, Branch, scriptName)
 end
 
--- Load Custom UI Manager V2
 local UIManager = loadstring(game:HttpGet(GetUrl("UIManager.lua")))()
 local UI = UIManager.new()
 
 -- --- [ SETUP WINDOW ] ---
 local Window = UI:MakeWindow({
     Name = "Werskieee Hub | PREMIUM V2",
-    Size = UDim2.new(0, 600, 0, 450)
+    Size = UDim2.new(0, 600, 0, 500) -- Agak gedean dikit biar muat list
 })
 
--- --- [ TAB 1: PLAYER ] ---
-local MainTab = Window:MakeTab({Name = "Player"})
-
-MainTab:AddButton("Set WalkSpeed (50)", function()
-    if game.Players.LocalPlayer.Character then
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 50
-    end
-end)
-
-MainTab:AddButton("Set JumpPower (100)", function()
-    if game.Players.LocalPlayer.Character then
-        game.Players.LocalPlayer.Character.Humanoid.UseJumpPower = true
-        game.Players.LocalPlayer.Character.Humanoid.JumpPower = 100
-    end
-end)
-
-MainTab:AddInput("Custom Speed", "Masukkan angka...", function(text)
-    local num = tonumber(text)
-    if num and game.Players.LocalPlayer.Character then
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = num
-    end
-end)
-
--- --- [ TAB 2: SUPER SCANNER ] ---
+-- --- [ TAB SCANNER (LOGIC BARU) ] ---
 local ScannerTab = Window:MakeTab({Name = "Scanner"})
-local OutputLabel = ScannerTab:AddLabel("Status: Idle")
 
--- Config Scanner
-local targetPath = game.Workspace
-local searchName = ""     -- Nama object yg dicari
-local modValue = 0        -- Nilai baru yg mau disuntik
+local targetName = ""
+local targetPath = workspace
 
-ScannerTab:AddInput("Target Path (Default: Workspace)", "workspace/players/replicated", function(text)
-    local t = text:lower()
-    if t == "players" then targetPath = game.Players 
-    elseif t == "replicated" then targetPath = game.ReplicatedStorage
-    elseif t == "lighting" then targetPath = game.Lighting
-    else targetPath = game.Workspace end
-    
-    OutputLabel.Text = "Target: " .. targetPath.Name
+ScannerTab:AddLabel("--- CONFIG SCANNER ---")
+
+-- 1. Input Nama yang mau dicari
+ScannerTab:AddInput("Cari Nama Value", "cth: Cash/Price/Speed...", function(text)
+    targetName = text
 end)
 
-ScannerTab:AddLabel("--- [ MODIFIKASI VALUE ] ---")
-
-ScannerTab:AddInput("Cari Nama Value (cth: Price)", "Nama Object Value...", function(text)
-    searchName = text
-end)
-
-ScannerTab:AddInput("Ubah Jadi Angka (cth: 0)", "Angka Baru...", function(text)
-    modValue = tonumber(text) or 0 -- Kalau bukan angka, jadi 0
-end)
-
-ScannerTab:AddButton("SCAN & MODIF (EXECUTE)", function()
-    if searchName == "" then 
-        OutputLabel.Text = "Error: Nama Value kosong!"
-        return 
+-- 2. Tombol Eksekusi
+ScannerTab:AddButton("SCAN SEKARANG", function()
+    -- Hapus hasil scan lama (Perlu update UIManager step 1 tadi)
+    if ScannerTab.Clear then
+        ScannerTab:Clear()
+    else
+        -- Fallback kalau lupa update UIManager
+        ScannerTab:AddLabel("⚠️ WARNING: Fitur Clear belum dipasang di UIManager!")
+        ScannerTab:AddLabel("--- SCAN BARU ---")
     end
 
-    OutputLabel.Text = "Scanning Deep & Modifying..."
-    local count = 0
+    -- Balikin Config UI (Karena kehapus pas Clear)
+    ScannerTab:AddLabel("Hasil Scan untuk: " .. targetName)
     
-    -- Pakai GetDescendants biar nembus sampai ke dalam folder terdalam
+    local foundCount = 0
+
+    -- Mulai Deep Scan
     for _, v in pairs(targetPath:GetDescendants()) do
-        -- Cek apakah dia object Value (Int/Number/String)
-        if v:IsA("IntValue") or v:IsA("NumberValue") or v:IsA("StringValue") then
+        -- Cek apakah dia tipe Value (Angka/Text) DAN namanya cocok
+        if (v:IsA("IntValue") or v:IsA("NumberValue") or v:IsA("StringValue")) 
+           and string.find(v.Name:lower(), targetName:lower()) then
             
-            -- Cek apakah namanya cocok (case insensitive)
-            if string.find(v.Name:lower(), searchName:lower()) then
-                local old = v.Value
-                v.Value = modValue -- UBAH VALUE DISINI
-                
-                count = count + 1
-                print("MODIFIED:", v:GetFullName(), old, "->", modValue)
-                
-                -- Tampilin di UI (Limit 5 biar ga lag ui nya)
-                if count <= 5 then
-                    ScannerTab:AddLabel("[MOD] " .. v.Name .. " -> " .. modValue)
+            foundCount = foundCount + 1
+            
+            -- [LOGIC UTAMA] 
+            -- Bikin Input Box KHUSUS buat item ini doang
+            -- Label: Nama Item + Value Asli
+            -- Action: Ubah Value item INI SAJA
+            
+            local labelInfo = v.Name .. " (" .. tostring(v.Value) .. ")"
+            
+            ScannerTab:AddInput(labelInfo, "Isi value baru...", function(newValue)
+                -- Cek tipe data biar gak error
+                if v:IsA("IntValue") or v:IsA("NumberValue") then
+                    local num = tonumber(newValue)
+                    if num then
+                        v.Value = num
+                        print("✅ Berhasil ubah " .. v.Name .. " jadi " .. num)
+                    end
+                else
+                    -- Kalau StringValue
+                    v.Value = newValue
+                    print("✅ Berhasil ubah text " .. v.Name)
                 end
-            end
+            end)
         end
     end
+
+    if foundCount == 0 then
+        ScannerTab:AddLabel("❌ Tidak ditemukan object bernama: " .. targetName)
+    else
+        ScannerTab:AddLabel("✅ Ditemukan: " .. foundCount .. " items.")
+        ScannerTab:AddLabel("Ketik angka di kotak & Enter utk ubah.")
+    end
     
-    OutputLabel.Text = "Selesai. " .. count .. " Value diubah."
+    -- Tombol Reset biar user bisa scan lagi tanpa restart script
+    ScannerTab:AddButton("Reset / Scan Lagi", function()
+        -- Ini trik visual doang, aslinya cuma manggil function scan lagi ntar
+        -- Tapi user biasanya klik tombol scan yg di atas lagi
+    end)
 end)
 
--- --- [ TAB 3: CREDITS ] ---
-local CreditTab = Window:MakeTab({Name = "Credits"})
-CreditTab:AddLabel("Created by " .. Owner)
-CreditTab:AddLabel("UI Library: Custom V2")
-
-print(":: Werskieee Hub Loaded ::")
+print(":: Werskieee Scanner Loaded ::")
