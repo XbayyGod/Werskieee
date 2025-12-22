@@ -41,16 +41,31 @@ local isAutoFishing = false
 local function StartAutoFish()
     equipRemote:FireServer(1) -- Pastikan Rod di Slot 1
     isAutoFishing = true
+    
     task.spawn(function()
         while isAutoFishing do
+            -- Kita bungkus pakai pcall biar kalau error satu, loop gak mati
             pcall(function()
-                rodRemote:InvokeServer(workspace:GetServerTimeNow())
-                task.wait(0.1)
-                miniGameRemote:InvokeServer(-1.25, 1.0, workspace:GetServerTimeNow())
-                task.wait(1.5) -- Delay animasi
+                
+                -- [LOGIC 5X BARU]
+                -- Pakai task.spawn di dalam biar perintahnya langsung jalan barengan
+                -- Gak nunggu-nungguan lagi (Asynchronous)
+                
+                task.spawn(function()
+                    rodRemote:InvokeServer(workspace:GetServerTimeNow())
+                end)
+                
+                task.spawn(function()
+                    miniGameRemote:InvokeServer(-1.25, 1.0, workspace:GetServerTimeNow())
+                end)
+                
+                -- Langsung tembak finish tanpa basa-basi
                 finishRemote:FireServer()
             end)
-            task.wait(0.2)
+            
+            -- Jeda super singkat (0.05 detik) biar server masih sempet napas dikit
+            -- Kalau masih kurang cepet, ganti jadi task.wait() aja (tanpa angka)
+            task.wait(0.05)
         end
     end)
 end
