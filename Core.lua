@@ -3,21 +3,21 @@
     Deskripsi: Controller Logika Game
 ]]
 
-local Owner = "XbayyGod" -- Ganti nama lu
+-- Config Repository Lu
+local Owner = "XbayyGod"
 local Repo = "Werskieee"
 local Branch = "main"
 
--- --- [ LOAD LIBRARY ] ---
--- Kalau belum punya link GitHub, pake loadstring lokal atau pastebin sementara.
--- Contoh: local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/User/Repo/main/UIManager.lua"))()
+-- Function buat bikin Link otomatis
+local function GetUrl(scriptName)
+    return string.format("https://raw.githubusercontent.com/%s/%s/%s/%s", Owner, Repo, Branch, scriptName)
+end
 
--- UNTUK TEST LOKAL (Kalau UIManager dan Core dijalanin di satu script):
--- Anggap variabel 'Library' sudah ada dari script di atas jika digabung.
--- Tapi kalau dipisah file, pastikan loadstring UIManager dijalankan dulu.
+-- Load UIManager otomatis dari Repo yang sama
+-- (Gak perlu copy-paste link manual lagi)
+local Library = loadstring(game:HttpGet(GetUrl("UIManager.lua")))()
 
--- Simulasi Load (Ganti ini nanti pake link Github UIManager.lua lu)
-local Library = loadstring(game:HttpGet("LINK_RAW_UIMANAGER.LUA_LU_DISINI"))()
-
+-- Mulai buat Window
 local Window = Library:CreateWindow("SansMobaHub | V2 Remake")
 
 -- --- [ SERVICES & VARIABLES ] ---

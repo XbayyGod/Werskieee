@@ -8,3 +8,5 @@ local function GetUrl(scriptName)
 end
 
 loadstring(game:HttpGet(GetUrl("Core.lua")))()
+
+
