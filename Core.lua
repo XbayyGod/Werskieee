@@ -9,36 +9,88 @@ local function GetUrl(scriptName)
     return string.format("https://raw.githubusercontent.com/%s/%s/%s/%s", Owner, Repo, Branch, scriptName)
 end
 
--- Load Custom UI Manager kita
+-- Load Custom UI Manager V2
 local UIManager = loadstring(game:HttpGet(GetUrl("UIManager.lua")))()
-
--- Inisialisasi Library
 local UI = UIManager.new()
 
--- Buat Window Baru
-local MainWindow = UI:MakeWindow("Werskieee Hub | Custom UI")
+-- --- [ SETUP WINDOW ] ---
+local Window = UI:MakeWindow({
+    Name = "Werskieee Hub | PREMIUM",
+    Size = UDim2.new(0, 600, 0, 400)
+})
 
--- --- [ FITUR-FITUR ] ---
+-- --- [ TAB 1: PLAYER ] ---
+local MainTab = Window:MakeTab({Name = "Player"})
 
--- Fitur 1: Tes Print
-MainWindow:AddButton("Tes Console Print", function()
-    print("Tombol berhasil diklik! Custom UI berjalan lancar.")
-end)
-
--- Fitur 2: Speed Hack
-MainWindow:AddButton("Set WalkSpeed 100", function()
-    local plr = game.Players.LocalPlayer
-    if plr.Character and plr.Character:FindFirstChild("Humanoid") then
-        plr.Character.Humanoid.WalkSpeed = 100
+MainTab:AddButton("Set WalkSpeed (50)", function()
+    if game.Players.LocalPlayer.Character then
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 50
     end
 end)
 
--- Fitur 3: Reset Speed
-MainWindow:AddButton("Reset WalkSpeed", function()
-    local plr = game.Players.LocalPlayer
-    if plr.Character and plr.Character:FindFirstChild("Humanoid") then
-        plr.Character.Humanoid.WalkSpeed = 16
+MainTab:AddButton("Set JumpPower (100)", function()
+    if game.Players.LocalPlayer.Character then
+        game.Players.LocalPlayer.Character.Humanoid.UseJumpPower = true
+        game.Players.LocalPlayer.Character.Humanoid.JumpPower = 100
     end
 end)
 
-print("Script Loaded!")
+MainTab:AddInput("Custom Speed", "Masukkan angka...", function(text)
+    local num = tonumber(text)
+    if num and game.Players.LocalPlayer.Character then
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = num
+    end
+end)
+
+-- --- [ TAB 2: INSTANCE SCANNER ] ---
+local ScannerTab = Window:MakeTab({Name = "Scanner"})
+local OutputLabel = ScannerTab:AddLabel("Status: Idle")
+
+-- Variable buat nyimpen path target
+local targetPath = game.Workspace
+local targetName = ""
+
+ScannerTab:AddInput("Target Path (cth: Workspace)", "Default: Workspace", function(text)
+    -- Logic simple buat ganti path (Hanya support service utama dulu)
+    if text:lower() == "players" then targetPath = game.Players 
+    elseif text:lower() == "replicated" then targetPath = game.ReplicatedStorage
+    elseif text:lower() == "lighting" then targetPath = game.Lighting
+    else targetPath = game.Workspace end
+    
+    OutputLabel.Text = "Target set to: " .. targetPath.Name
+end)
+
+ScannerTab:AddInput("Search Object Name", "Nama Objek...", function(text)
+    targetName = text
+end)
+
+ScannerTab:AddButton("START SCANNING", function()
+    OutputLabel.Text = "Scanning " .. targetPath.Name .. "..."
+    local foundCount = 0
+    
+    -- Bersihkan log lama (Sebenarnya butuh fungsi clear UI, tapi kita tumpuk dulu)
+    ScannerTab:AddLabel("--- [ HASIL SCAN BARU ] ---")
+    
+    for _, obj in pairs(targetPath:GetChildren()) do
+        -- Kalau targetName kosong, print semua. Kalau ada isinya, filter.
+        if targetName == "" or string.find(obj.Name:lower(), targetName:lower()) then
+            foundCount = foundCount + 1
+            local info = string.format("[%s] %s", obj.ClassName, obj.Name)
+            
+            -- Print ke Console (F9) biar detail
+            print("FOUND:", obj:GetFullName())
+            
+            -- Tampilkan di UI
+            ScannerTab:AddLabel(info)
+        end
+    end
+    
+    OutputLabel.Text = "Selesai. Ditemukan: " .. foundCount
+end)
+
+-- --- [ TAB 3: CREDITS ] ---
+local CreditTab = Window:MakeTab({Name = "Credits"})
+CreditTab:AddLabel("Created by XbayyGod")
+CreditTab:AddLabel("UI Library: Custom V2")
+
+print(":: Werskieee Hub Loaded ::")
