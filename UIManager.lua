@@ -1,5 +1,5 @@
 -- [[ Filename: UIManager.lua ]]
--- VERSION: V7.6 (FIXED SPACING: Added Gap Between Header and Content)
+-- VERSION: V8 (SEAMLESS CARD SYSTEM: Header & Content United)
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -16,9 +16,9 @@ Library.Themes = {
         Main        = Color3.fromRGB(20, 20, 20),
         Header      = Color3.fromRGB(25, 25, 25),
         Sidebar     = Color3.fromRGB(25, 25, 25),
-        CardBg      = Color3.fromRGB(32, 32, 32), -- Warna Kartu Group
+        CardBg      = Color3.fromRGB(32, 32, 32), -- Satu warna untuk seluruh kartu
         Text        = Color3.fromRGB(255, 255, 255),
-        SubText     = Color3.fromRGB(170, 170, 170),
+        SubText     = Color3.fromRGB(160, 160, 160),
         Accent      = Color3.fromRGB(115, 100, 255),
         Outline     = Color3.fromRGB(60, 60, 60),
         Hover       = Color3.fromRGB(50, 50, 50),
@@ -87,16 +87,16 @@ end
 
 -- [[ 3. MAIN UI GENERATOR ]]
 function Library:CreateWindow(title_ignored)
-    if CoreGui:FindFirstChild("WerskieeeHubV7_6") then CoreGui.WerskieeeHubV7_6:Destroy() end
-    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubV7_6") then 
-        game.Players.LocalPlayer.PlayerGui.WerskieeeHubV7_6:Destroy() 
+    if CoreGui:FindFirstChild("WerskieeeHubV8") then CoreGui.WerskieeeHubV8:Destroy() end
+    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubV8") then 
+        game.Players.LocalPlayer.PlayerGui.WerskieeeHubV8:Destroy() 
     end
 
     local TargetParent = nil
     local s, r = pcall(function() return gethui() end)
     if s and r then TargetParent = r else TargetParent = game.Players.LocalPlayer:WaitForChild("PlayerGui") end
 
-    local Gui = Create("ScreenGui", {Name = "WerskieeeHubV7_6", Parent = TargetParent, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, ResetOnSpawn = false})
+    local Gui = Create("ScreenGui", {Name = "WerskieeeHubV8", Parent = TargetParent, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, ResetOnSpawn = false})
     
     local Main = Create("Frame", {
         Parent = Gui, Size = UDim2.fromOffset(600, 400), Position = UDim2.fromScale(0.5, 0.5),
@@ -161,7 +161,7 @@ function Library:CreateWindow(title_ignored)
         BackgroundTransparency = 1, BorderSizePixel = 0, ClipsDescendants = true
     })
 
-    -- BUTTONS CREATOR
+    -- BUTTONS CREATOR (ICONS FIXED SIZE)
     local function CreateBtn(order, iconID, isClose, callback)
         local Btn = Create("TextButton", {
             Parent = ControlHolder, Text = "", Size = UDim2.new(0, 28, 0, 28), AutoButtonColor = false, 
@@ -207,63 +207,70 @@ function Library:CreateWindow(title_ignored)
     local function CreateElements(ParentFrame)
         local Elements = {}
 
-        -- >> GROUP (SPACIOUS CARD)
+        -- >> GROUP (SEAMLESS CARD)
         function Elements:Group(text)
             local isOpened = true
             
-            -- WADAH UTAMA (Card)
+            -- WADAH UTAMA (Card) - Ini yang punya background
             local GroupCard = Create("Frame", {
                 Parent = ParentFrame, 
-                Size = UDim2.new(1, 0, 0, 36), 
-                BackgroundTransparency = 0, 
+                Size = UDim2.new(1, 0, 0, 40), 
+                BackgroundTransparency = 0, -- Background Aktif
                 ClipsDescendants = true,
                 BorderSizePixel = 0
             })
             Create("UICorner", {Parent = GroupCard, CornerRadius = UDim.new(0, 8)})
-            ApplyTheme(GroupCard, "BackgroundColor3", "CardBg")
+            ApplyTheme(GroupCard, "BackgroundColor3", "CardBg") -- Satu Warna untuk semua
 
-            -- HEADER TOMBOL
-            local HeaderBtn = Create("TextButton", {
-                Parent = GroupCard, Text = "", Size = UDim2.new(1, 0, 0, 36),
-                AutoButtonColor = false, ZIndex = 2, BorderSizePixel = 0,
-                BackgroundTransparency = 1 
+            -- STACKING HEADER & CONTENT SECARA VERTIKAL
+            -- Agar tidak ada gap, kita gunakan UIListLayout di dalam GroupCard juga
+            local GroupLayout = Create("UIListLayout", {
+                Parent = GroupCard, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 0) -- Padding 0 = Nempel
+            })
+
+            -- 1. HEADER (Transparan, nempel di atas)
+            local HeaderFrame = Create("TextButton", {
+                Parent = GroupCard, Text = "", Size = UDim2.new(1, 0, 0, 40), -- Tinggi Header 40px
+                AutoButtonColor = false, LayoutOrder = 0, BorderSizePixel = 0,
+                BackgroundTransparency = 1 -- Transparan, pakai warna CardBg
             })
             
             local Label = Create("TextLabel", {
-                Parent = HeaderBtn, Text = text, Size = UDim2.new(1, -35, 1, 0), Position = UDim2.new(0, 12, 0, 0),
+                Parent = HeaderFrame, Text = text, Size = UDim2.new(1, -35, 1, 0), Position = UDim2.new(0, 12, 0, 0),
                 TextXAlignment = Enum.TextXAlignment.Left, Font = Enum.Font.GothamBold, 
                 TextSize = 16, BackgroundTransparency = 1
             })
             ApplyTheme(Label, "TextColor3", "Accent")
 
             local Arrow = Create("ImageLabel", {
-                Parent = HeaderBtn, Image = "rbxassetid://6034818372", Size = UDim2.new(0, 18, 0, 18),
+                Parent = HeaderFrame, Image = "rbxassetid://6034818372", Size = UDim2.new(0, 18, 0, 18),
                 Position = UDim2.new(1, -28, 0.5, -9), BackgroundTransparency = 1, Rotation = 180
             })
             ApplyTheme(Arrow, "ImageColor3", "SubText")
 
-            -- WADAH KONTEN
+            -- 2. WADAH KONTEN (Transparan, nempel di bawah header)
             local Container = Create("Frame", {
-                Parent = GroupCard, Size = UDim2.new(1, 0, 0, 0), Position = UDim2.new(0, 0, 0, 36),
+                Parent = GroupCard, Size = UDim2.new(1, 0, 0, 0), LayoutOrder = 1,
                 BackgroundTransparency = 1
             })
             local ContainerLayout = Create("UIListLayout", {
                 Parent = Container, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4) -- Jarak antar item
             })
             
-            -- [!] PADDING TAMBAHAN DI SINI (Fix Jarak Header ke Konten)
+            -- Padding di dalam container
             Create("UIPadding", {
                 Parent = Container, 
-                PaddingTop = UDim.new(0, 15), -- JARAK ATAS (Header ke Item pertama)
-                PaddingBottom = UDim.new(0, 15), -- JARAK BAWAH
+                PaddingTop = UDim.new(0, 5), -- Jarak sedikit dari header
+                PaddingBottom = UDim.new(0, 15), -- Jarak bawah agar tidak mepet
                 PaddingLeft = UDim.new(0, 10), 
                 PaddingRight = UDim.new(0, 10)
             })
 
             local function UpdateSize()
                 local contentHeight = ContainerLayout.AbsoluteContentSize.Y
-                -- Total Tinggi = Header(36) + Isi + Padding Atas(15) + Padding Bawah(15)
-                local targetHeight = isOpened and (36 + contentHeight + 30) or 36
+                -- Tinggi Header (40) + Tinggi Konten + Padding Bawah (15) + Padding Atas (5)
+                local targetHeight = isOpened and (40 + contentHeight + 20) or 40
+                
                 TweenService:Create(GroupCard, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                     Size = UDim2.new(1, 0, 0, targetHeight)
                 }):Play()
@@ -271,7 +278,7 @@ function Library:CreateWindow(title_ignored)
             end
             
             ContainerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() if isOpened then UpdateSize() end end)
-            HeaderBtn.MouseButton1Click:Connect(function() isOpened = not isOpened; UpdateSize() end)
+            HeaderFrame.MouseButton1Click:Connect(function() isOpened = not isOpened; UpdateSize() end)
 
             return CreateElements(Container)
         end
@@ -414,7 +421,7 @@ function Library:CreateWindow(title_ignored)
                 BorderSizePixel = 0
             })
             Create("UICorner", {Parent = List, CornerRadius = UDim.new(0, 6)})
-            ApplyTheme(List, "BackgroundColor3", "CardBg") 
+            ApplyTheme(List, "BackgroundColor3", "CardBg") -- List tetap punya background
             local ListStroke = Create("UIStroke", {Parent = List, Thickness = 1})
             ApplyTheme(ListStroke, "Color", "Outline")
 
