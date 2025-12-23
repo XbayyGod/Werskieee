@@ -170,6 +170,13 @@ function Library:CreateWindow(title_ignored)
         function Elements:Group(text)
             local isOpened = true
             
+            -- [[ PENGATURAN JARAK (GAP) ]]
+            -- Ganti angka ini sesuka hati lu.
+            -- 10 = Rapi standar
+            -- 20 = Lega
+            -- 0  = Nempel garis
+            local GAP_SIZE = 15  
+            
             -- 1. CARD BACKGROUND
             local GroupCard = Create("Frame", {
                 Parent = ParentFrame, 
@@ -205,31 +212,32 @@ function Library:CreateWindow(title_ignored)
             })
             ApplyTheme(Arrow, "ImageColor3", "SubText")
 
-            -- 3. DIVIDER
+            -- 3. DIVIDER (GARIS)
             local Divider = Create("Frame", {
                 Parent = GroupCard, Size = UDim2.new(1, 0, 0, 1), LayoutOrder = 1, BorderSizePixel = 0,
                 BackgroundTransparency = 0 
             })
             ApplyTheme(Divider, "BackgroundColor3", "Outline")
             
-            -- 4. CONTAINER KONTEN
+            -- 4. FRAME JARAK (GAP) - INI YANG BIKIN LEGA
+            local GapFrame = Create("Frame", {
+                Parent = GroupCard, Size = UDim2.new(1, 0, 0, GAP_SIZE), LayoutOrder = 2,
+                BackgroundTransparency = 1 -- Transparan
+            })
+            
+            -- 5. CONTAINER KONTEN (ISI MENU)
             local Container = Create("Frame", {
-                Parent = GroupCard, Size = UDim2.new(1, 0, 0, 0), LayoutOrder = 2,
+                Parent = GroupCard, Size = UDim2.new(1, 0, 0, 0), LayoutOrder = 3,
                 BackgroundTransparency = 1, Visible = true 
             })
             local ContainerLayout = Create("UIListLayout", {
                 Parent = Container, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 5)
             })
             
-            -- [[ PENGATURAN JARAK DISINI ]]
+            -- Padding Container (Cuma buat Kiri, Kanan, Bawah)
             Create("UIPadding", {
                 Parent = Container, 
-                -- Ganti angka 12 ini.
-                -- Kalau mau RAPET BANGET: ubah jadi 5
-                -- Kalau mau AGAK JAUH: ubah jadi 12 atau 15
-                -- Kalau mau LEGA: ubah jadi 20+
-                PaddingTop = UDim.new(0, 100), 
-                
+                PaddingTop = UDim.new(0, 0), -- Gak perlu padding atas lagi, udah ada GapFrame
                 PaddingBottom = UDim.new(0, 15),
                 PaddingLeft = UDim.new(0, 10), 
                 PaddingRight = UDim.new(0, 10)
@@ -238,13 +246,11 @@ function Library:CreateWindow(title_ignored)
             local function UpdateSize()
                 local contentHeight = ContainerLayout.AbsoluteContentSize.Y
                 local headerHeight = 44
+                local dividerHeight = 1
+                local bottomPadding = 15 -- Sesuai paddingBottom di atas
                 
-                -- Hitung total padding dari settingan di atas (Top + Bottom)
-                -- Harus sama dengan angka di UIPadding tadi. 
-                -- Misal PaddingTop 12 + PaddingBottom 15 = 27
-                local paddingTotal = 12 + 15 
-                
-                local fullHeight = headerHeight + 1 + contentHeight + paddingTotal
+                -- Itungan Total Tinggi:
+                local fullHeight = headerHeight + dividerHeight + GAP_SIZE + contentHeight + bottomPadding
                 
                 local targetHeight = isOpened and fullHeight or headerHeight
                 
@@ -252,6 +258,7 @@ function Library:CreateWindow(title_ignored)
                 
                 if isOpened then
                     Container.Visible = true
+                    GapFrame.Visible = true
                     TweenService:Create(Divider, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
                     TweenService:Create(GroupCard, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                         Size = UDim2.new(1, 0, 0, targetHeight)
@@ -263,7 +270,10 @@ function Library:CreateWindow(title_ignored)
                     TweenService:Create(Divider, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
                     
                     task.delay(0.3, function()
-                        if not isOpened then Container.Visible = false end
+                        if not isOpened then 
+                            Container.Visible = false 
+                            GapFrame.Visible = false
+                        end
                     end)
                 end
             end
