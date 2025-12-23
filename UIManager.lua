@@ -1,5 +1,5 @@
 -- [[ Filename: UIManager.lua ]]
--- VERSION: CLEAN SLATE (With Fixed Group Spacing & Divider)
+-- VERSION: FINAL FIX (PADDING & GAP SYSTEM)
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -57,16 +57,16 @@ end
 
 -- [[ 3. MAIN UI GENERATOR ]]
 function Library:CreateWindow(title_ignored)
-    if CoreGui:FindFirstChild("WerskieeeHubClean") then CoreGui.WerskieeeHubClean:Destroy() end
-    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubClean") then 
-        game.Players.LocalPlayer.PlayerGui.WerskieeeHubClean:Destroy() 
+    if CoreGui:FindFirstChild("WerskieeeHubFinal") then CoreGui.WerskieeeHubFinal:Destroy() end
+    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubFinal") then 
+        game.Players.LocalPlayer.PlayerGui.WerskieeeHubFinal:Destroy() 
     end
 
     local TargetParent = nil
     local s, r = pcall(function() return gethui() end)
     if s and r then TargetParent = r else TargetParent = game.Players.LocalPlayer:WaitForChild("PlayerGui") end
 
-    local Gui = Create("ScreenGui", {Name = "WerskieeeHubClean", Parent = TargetParent, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, ResetOnSpawn = false})
+    local Gui = Create("ScreenGui", {Name = "WerskieeeHubFinal", Parent = TargetParent, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, ResetOnSpawn = false})
     
     local Main = Create("Frame", {
         Parent = Gui, Size = UDim2.fromOffset(600, 400), Position = UDim2.fromScale(0.5, 0.5),
@@ -155,7 +155,18 @@ function Library:CreateWindow(title_ignored)
         Btn.MouseButton1Click:Connect(callback)
     end
 
-    CreateBtn(2, "rbxassetid://10734896206", false, function() Main.Visible = false end)
+    CreateBtn(1, "rbxassetid://10734896206", false, function() Main.Visible = false end)
+    local SidebarOpen = true
+    CreateBtn(2, "rbxassetid://10734965702", false, function()
+        SidebarOpen = not SidebarOpen
+        if SidebarOpen then
+            TweenService:Create(Sidebar, TweenInfo.new(0.3), {Size = UDim2.new(0, 160, 1, -40)}):Play()
+            TweenService:Create(Content, TweenInfo.new(0.3), {Size = UDim2.new(1, -170, 1, -50), Position = UDim2.new(0, 165, 0, 45)}):Play()
+        else
+            TweenService:Create(Sidebar, TweenInfo.new(0.3), {Size = UDim2.new(0, 0, 1, -40)}):Play()
+            TweenService:Create(Content, TweenInfo.new(0.3), {Size = UDim2.new(1, -20, 1, -50), Position = UDim2.new(0, 10, 0, 45)}):Play()
+        end
+    end)
     CreateBtn(3, "rbxassetid://6031094678", true, function() Gui:Destroy() end)
 
     UserInputService.InputBegan:Connect(function(input, processed)
@@ -166,16 +177,12 @@ function Library:CreateWindow(title_ignored)
     local function CreateElements(ParentFrame)
         local Elements = {}
 
-        -- >> GROUP (INI YANG GUA UBAH TOTAL: HEADER -> GARIS -> JARAK -> KONTEN)
--- [[ FUNGSI Elements:Group (VERSI FINAL - PADDING FIX) ]]
+        -- >> GROUP (FIXED LOGIC)
         function Elements:Group(text)
             local isOpened = true
             
             -- [[ ATUR JARAK DISINI ]]
-            -- Ganti angka 20 ini.
-            -- 0  = Nempel Garis
-            -- 20 = Jarak Sedang
-            -- 40 = Jauh Banget
+            -- Ganti angka 20 ini. Makin gede makin jauh ke bawah.
             local GAP_SIZE = 20 
             
             -- 1. CARD BACKGROUND
@@ -213,7 +220,7 @@ function Library:CreateWindow(title_ignored)
             })
             ApplyTheme(Arrow, "ImageColor3", "SubText")
 
-            -- 3. DIVIDER (GARIS)
+            -- 3. DIVIDER
             local Divider = Create("Frame", {
                 Parent = GroupCard, Size = UDim2.new(1, 0, 0, 1), LayoutOrder = 1, BorderSizePixel = 0,
                 BackgroundTransparency = 0 
@@ -230,10 +237,9 @@ function Library:CreateWindow(title_ignored)
             })
             
             -- [[ PADDING CONTAINER ]]
-            -- Disini kuncinya. Kita masukin GAP_SIZE ke PaddingTop.
             Create("UIPadding", {
                 Parent = Container, 
-                PaddingTop = UDim.new(0, GAP_SIZE), -- Jarak Atas ngambil dari settingan GAP_SIZE
+                PaddingTop = UDim.new(0, GAP_SIZE), -- Ikut GAP_SIZE
                 PaddingBottom = UDim.new(0, 15),
                 PaddingLeft = UDim.new(0, 10), 
                 PaddingRight = UDim.new(0, 10)
@@ -245,9 +251,7 @@ function Library:CreateWindow(title_ignored)
                 local dividerHeight = 1
                 local bottomPadding = 15
                 
-                -- [[ MATEMATIKA TINGGI ]]
-                -- Kita harus nambahin GAP_SIZE ke total tinggi manual
-                -- Header + Garis + Konten + Jarak Atas (Gap) + Jarak Bawah
+                -- Matematika Total Tinggi
                 local fullHeight = headerHeight + dividerHeight + contentHeight + GAP_SIZE + bottomPadding
                 
                 local targetHeight = isOpened and fullHeight or headerHeight
