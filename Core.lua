@@ -27,3 +27,22 @@ end)
 FishGroup:Slider("Reel Speed", 1, 100, 50, function(Value)
     print("Speed:", Value)
 end)
+
+local TeleportGroup = MainTab:Group("Teleports")
+
+TeleportGroup:Button("Teleport Altar 1", function()
+    local player = game.Players.LocalPlayer
+    -- Cek karakter biar ga error kalau mati
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        local root = player.Character.HumanoidRootPart
+        
+        -- Cek apakah folder map nya ada
+        if workspace:FindFirstChild("! ENCHANTING ALTAR !") and workspace["! ENCHANTING ALTAR !"]:FindFirstChild("EnchantLocation") then
+            local target = workspace["! ENCHANTING ALTAR !"].EnchantLocation
+            -- Teleport logic
+            root.CFrame = target.CFrame + Vector3.new(0, 3, 0)
+        else
+            warn("Tempat 'Enchanting Altar' ga ketemu bos!")
+        end
+    end
+end)
