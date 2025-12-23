@@ -1,58 +1,85 @@
 -- [[ Filename: UIManager.lua ]]
 local UIManager = {}
 
--- Load Library Fluent dari Sumber Asli
-local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+-- =================================================================
+-- BAGIAN 1: ENGINE UI (KODE PANJANG FLUENT)
+-- =================================================================
+-- Kita masukkan kode panjang tadi ke dalam variabel 'Fluent'
+local Fluent = (function()
+    
+    -- >> PASTE SEMUA KODE PANJANG YANG KAMU KIRIM TADI DI BAWAH SINI <<
+    -- (Dari 'local a,b' sampai 'return J(M) end')
+    -- Pastikan tidak ada yang ketinggalan satu huruf pun!
+    
+    -- ... [TEMPAT PASTE KODE PANJANG] ...
+    
+    -- Contoh isi dikit biar paham (JANGAN COPY INI, PASTE YG PUNYA KAMU):
+    -- local a,b={{1,'ModuleScript',{'MainModule'}... dst
+    
+end)() -- <--- JANGAN HAPUS TANDA KURUNG '()' INI. Ini buat jalanin kodenya.
+
+-- Load Module Tambahan (Save Manager & Interface)
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
-function UIManager.LoadWindow(title, subtitle, customColor)
-    -- 1. Setup Window Dasar
+-- =================================================================
+-- BAGIAN 2: CUSTOM THEME (WARNA KAMU SENDIRI)
+-- =================================================================
+-- Disini kita bikin tema baru bernama 'IqbalTheme'.
+-- Ganti kode warna (RGB) sesuai selera kamu.
+
+Fluent.Themes["IqbalTheme"] = {
+    Name = "IqbalTheme",
+    Accent = Color3.fromRGB(255, 0, 0), -- [PENTING] Warna Utama (Merah). Ganti ini kalau mau warna lain.
+    
+    -- Warna Background (Acrylic/Kaca)
+    AcrylicMain = Color3.fromRGB(15, 15, 15), -- Hitam Pekat
+    AcrylicBorder = Color3.fromRGB(255, 0, 0), -- Garis pinggir window (Ikut warna Accent)
+    AcrylicGradient = ColorSequence.new(Color3.fromRGB(255, 0, 0), Color3.fromRGB(50, 0, 0)),
+    AcrylicNoise = 0.95,
+    
+    -- Warna Judul & Tab
+    TitleBarLine = Color3.fromRGB(255, 50, 50),
+    Tab = Color3.fromRGB(200, 200, 200), -- Warna teks tab tidak aktif
+    
+    -- Warna Elemen (Tombol, Input, dll)
+    Element = Color3.fromRGB(25, 25, 25), -- Warna dasar tombol
+    ElementBorder = Color3.fromRGB(60, 60, 60),
+    InElementBorder = Color3.fromRGB(255, 0, 0), -- Garis pinggir tombol saat aktif
+    ElementTransparency = 0.9,
+    
+    -- Toggle & Slider
+    ToggleSlider = Color3.fromRGB(255, 0, 0), -- Warna bulat toggle
+    ToggleToggled = Color3.fromRGB(255, 255, 255),
+    SliderRail = Color3.fromRGB(255, 0, 0), -- Garis slider
+    
+    -- Dropdown
+    DropdownFrame = Color3.fromRGB(30, 30, 30),
+    DropdownHolder = Color3.fromRGB(25, 25, 25),
+    DropdownBorder = Color3.fromRGB(60, 60, 60),
+    DropdownOption = Color3.fromRGB(255, 255, 255),
+    
+    -- Teks
+    Text = Color3.fromRGB(255, 255, 255), -- Warna tulisan utama (Putih)
+    SubText = Color3.fromRGB(170, 170, 170), -- Tulisan kecil (Abu-abu)
+    Hover = Color3.fromRGB(40, 40, 40), -- Warna saat mouse di atas tombol
+    HoverChange = 0.1
+}
+
+
+-- =================================================================
+-- BAGIAN 3: FUNGSI PEMANGGIL WINDOW
+-- =================================================================
+function UIManager.LoadWindow(title, subtitle)
     local Window = Fluent:CreateWindow({
         Title = title,
         SubTitle = subtitle,
         TabWidth = 160,
         Size = UDim2.fromOffset(580, 460),
         Acrylic = true, 
-        Theme = "Dark", -- Kita mulai dari Dark, nanti kita timpa warnanya
+        Theme = "IqbalTheme", -- <--- KITA PANGGIL TEMA CUSTOM TADI DISINI
         MinimizeKey = Enum.KeyCode.LeftControl
     })
-
-    -- 2. CUSTOM WARNA (Biar gak pasaran)
-    -- Kita gunakan spawn function biar dia jalan setelah UI jadi
-    task.spawn(function()
-        -- Tunggu sebentar sampai UI loading selesai
-        repeat task.wait() until Fluent.GUI
-        
-        -- Contoh Custom: Ubah warna Accent (Highlight utama)
-        -- Kalau customColor tidak diisi, pakai Biru standar
-        local Accent = customColor or Color3.fromRGB(0, 255, 128) -- Default: Spring Green
-        
-        -- Kita paksa ubah property warna di librarynya
-        -- Sayangnya Fluent agak kaku, cara terbaik adalah lewat Options jika sudah di-build,
-        -- atau kita ubah global theme-nya.
-        
-        -- UPDATE: Cara paling ampuh di Fluent adalah memodifikasi tabel warnanya langsung
-        -- Ini mengubah warna Outline dan Accent
-        local Gui = Fluent.GUI
-        if Gui then
-            -- Ubah garis pinggir biar sesuai tema
-            for _, v in pairs(Gui:GetDescendants()) do
-                if v.Name == "Accent" or v.Name == "Title" then
-                    if v:IsA("TextLabel") then v.TextColor3 = Accent end
-                    if v:IsA("Frame") then v.BackgroundColor3 = Accent end
-                end
-            end
-        end
-        
-        -- Notifikasi Custom bahwa ini script punya kamu
-        Fluent:Notify({
-            Title = "System",
-            Content = "UI Custom Colors Loaded",
-            SubContent = "By " .. game.Players.LocalPlayer.Name, -- Nama kamu otomatis muncul
-            Duration = 5
-        })
-    end)
     
     return Window, Fluent, SaveManager, InterfaceManager
 end

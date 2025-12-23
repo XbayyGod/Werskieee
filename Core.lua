@@ -7,31 +7,57 @@ local function GetUrl(scriptName)
     return string.format("https://raw.githubusercontent.com/%s/%s/%s/%s", Owner, Repo, Branch, scriptName)
 end
 
+-- 1. Panggil UIManager yang sudah kita buat
 local UIManager = loadstring(game:HttpGet(GetUrl("UIManager.lua")))()
 
--- ===========================================
--- SETTING WARNA CUSTOM DISINI
--- ===========================================
--- Coba ganti kode warna RGB di bawah ini:
--- Merah: Color3.fromRGB(255, 50, 50)
--- Ungu: Color3.fromRGB(170, 0, 255)
--- Emas: Color3.fromRGB(255, 215, 0)
-local MyThemeColor = Color3.fromRGB(255, 0, 0) -- Saya set Merah Menyala
+-- 2. Buat Window (Warna otomatis Merah sesuai settingan di UIManager)
+local Window, Fluent, SaveManager, InterfaceManager = UIManager.LoadWindow("Werskieee Hub", "Premium Script")
 
-local Window, Fluent, SaveManager, InterfaceManager = UIManager.LoadWindow(
-    "Werskieee Hub", 
-    "Private Version", 
-    MyThemeColor
-)
+-- ==========================
+-- CONTOH ISI MENU (TABS)
+-- ==========================
 
--- Tambahkan Tab dan Fitur seperti biasa...
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "home" }),
+    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
 }
 
-Tabs.Main:AddParagraph({
-    Title = "Welcome",
-    Content = "Script ini menggunakan tema warna custom merah!"
+local Options = Fluent.Options
+
+-- Contoh Tombol
+Tabs.Main:AddButton({
+    Title = "Test Button",
+    Description = "Coba klik ini",
+    Callback = function()
+        print("Tombol berhasil diklik!")
+    end
 })
 
+-- Contoh Toggle
+Tabs.Main:AddToggle("MyToggle", {
+    Title = "Auto Farm",
+    Default = false,
+    Callback = function(Value)
+        print("Auto Farm:", Value)
+    end
+})
+
+-- Contoh Slider
+Tabs.Main:AddSlider("Slider", {
+    Title = "WalkSpeed",
+    Default = 16,
+    Min = 16,
+    Max = 100,
+    Rounding = 1,
+    Callback = function(Value)
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+    end
+})
+
+-- Finalisasi
 Window:SelectTab(1)
+Fluent:Notify({
+    Title = "Werskieee Hub",
+    Content = "Script Loaded Successfully",
+    Duration = 5
+})
