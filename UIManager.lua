@@ -227,7 +227,7 @@ function Library:CreateWindow(title_ignored)
             -- Ubah Y Offset (30) jadi 50 atau berapapun kalau kurang turun.
             local Spacer = Create("Frame", {
                 Parent = Container, 
-                Size = UDim2.new(1, 0, 0, 30), -- < GANTI ANGKA 30 INI KALAU MAU MAKIN TURUN
+                Size = UDim2.new(1, 0, 0, 15), -- < GANTI ANGKA 30 INI KALAU MAU MAKIN TURUN
                 BackgroundTransparency = 1,
                 LayoutOrder = -1 -- Pastiin dia selalu paling atas
             })
