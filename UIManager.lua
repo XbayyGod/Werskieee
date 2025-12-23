@@ -167,6 +167,7 @@ function Library:CreateWindow(title_ignored)
         local Elements = {}
 
         -- >> GROUP (INI YANG GUA UBAH TOTAL: HEADER -> GARIS -> JARAK -> KONTEN)
+        -- [[ GANTI FUNGSI Elements:Group (METODE SPACER - ANTI STUCK) ]]
         function Elements:Group(text)
             local isOpened = true
             
@@ -220,24 +221,33 @@ function Library:CreateWindow(title_ignored)
             local ContainerLayout = Create("UIListLayout", {
                 Parent = Container, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 5)
             })
+
+            -- [[ SPACER: INI KUNCINYA ]]
+            -- Kita buat frame transparan buat nyundul konten ke bawah.
+            -- Ubah Y Offset (30) jadi 50 atau berapapun kalau kurang turun.
+            local Spacer = Create("Frame", {
+                Parent = Container, 
+                Size = UDim2.new(1, 0, 0, 30), -- < GANTI ANGKA 30 INI KALAU MAU MAKIN TURUN
+                BackgroundTransparency = 1,
+                LayoutOrder = -1 -- Pastiin dia selalu paling atas
+            })
             
-            -- [[ SETTING JARAK (PADDING) ]]
+            -- Padding Kiri Kanan Bawah doang (Atas udah diurus Spacer)
             Create("UIPadding", {
                 Parent = Container, 
-                PaddingTop = UDim.new(0, 50),    -- << GUA GANTI JADI 35 BIAR MAKIN TURUN
-                PaddingBottom = UDim.new(0, 15), -- Jarak bawah tetep 15
+                PaddingTop = UDim.new(0, 0), -- Nol-in aja karena udah ada Spacer
+                PaddingBottom = UDim.new(0, 15),
                 PaddingLeft = UDim.new(0, 10), 
                 PaddingRight = UDim.new(0, 10)
             })
 
             local function UpdateSize()
-                local contentHeight = ContainerLayout.AbsoluteContentSize.Y
+                -- Karena ada Spacer, AbsoluteContentSize otomatis ngitung tinggi Spacer juga
+                local contentHeight = ContainerLayout.AbsoluteContentSize.Y 
                 local headerHeight = 44
                 
-                -- Itungan Total Tinggi:
-                -- Header (44) + Divider (1) + Padding Atas (35) + Padding Bawah (15) = 95
-                local paddingTotal = 35 + 15
-                local fullHeight = headerHeight + 1 + contentHeight + paddingTotal
+                -- Itungan simpel: Header + Divider + Isi Konten (termasuk spacer) + Padding Bawah (15)
+                local fullHeight = headerHeight + 1 + contentHeight + 15
                 
                 local targetHeight = isOpened and fullHeight or headerHeight
                 
