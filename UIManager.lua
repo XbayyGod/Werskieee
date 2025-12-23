@@ -167,7 +167,6 @@ function Library:CreateWindow(title_ignored)
         local Elements = {}
 
         -- >> GROUP (INI YANG GUA UBAH TOTAL: HEADER -> GARIS -> JARAK -> KONTEN)
-        -- [[ GANTI FUNGSI Elements:Group (METODE SPACER - ANTI STUCK) ]]
         function Elements:Group(text)
             local isOpened = true
             
@@ -221,33 +220,31 @@ function Library:CreateWindow(title_ignored)
             local ContainerLayout = Create("UIListLayout", {
                 Parent = Container, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 5)
             })
-
-            -- [[ SPACER: INI KUNCINYA ]]
-            -- Kita buat frame transparan buat nyundul konten ke bawah.
-            -- Ubah Y Offset (30) jadi 50 atau berapapun kalau kurang turun.
-            local Spacer = Create("Frame", {
-                Parent = Container, 
-                Size = UDim2.new(1, 0, 0, 0), -- < GANTI ANGKA 30 INI KALAU MAU MAKIN TURUN
-                BackgroundTransparency = 1,
-                LayoutOrder = -1 -- Pastiin dia selalu paling atas
-            })
             
-            -- Padding Kiri Kanan Bawah doang (Atas udah diurus Spacer)
+            -- [[ PENGATURAN JARAK DISINI ]]
             Create("UIPadding", {
                 Parent = Container, 
-                PaddingTop = UDim.new(0, 0), -- Nol-in aja karena udah ada Spacer
+                -- Ganti angka 12 ini.
+                -- Kalau mau RAPET BANGET: ubah jadi 5
+                -- Kalau mau AGAK JAUH: ubah jadi 12 atau 15
+                -- Kalau mau LEGA: ubah jadi 20+
+                PaddingTop = UDim.new(0, 12), 
+                
                 PaddingBottom = UDim.new(0, 15),
                 PaddingLeft = UDim.new(0, 10), 
                 PaddingRight = UDim.new(0, 10)
             })
 
             local function UpdateSize()
-                -- Karena ada Spacer, AbsoluteContentSize otomatis ngitung tinggi Spacer juga
-                local contentHeight = ContainerLayout.AbsoluteContentSize.Y 
+                local contentHeight = ContainerLayout.AbsoluteContentSize.Y
                 local headerHeight = 44
                 
-                -- Itungan simpel: Header + Divider + Isi Konten (termasuk spacer) + Padding Bawah (15)
-                local fullHeight = headerHeight + 1 + contentHeight + 15
+                -- Hitung total padding dari settingan di atas (Top + Bottom)
+                -- Harus sama dengan angka di UIPadding tadi. 
+                -- Misal PaddingTop 12 + PaddingBottom 15 = 27
+                local paddingTotal = 12 + 15 
+                
+                local fullHeight = headerHeight + 1 + contentHeight + paddingTotal
                 
                 local targetHeight = isOpened and fullHeight or headerHeight
                 
