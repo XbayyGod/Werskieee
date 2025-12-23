@@ -1,5 +1,5 @@
 -- [[ Filename: UIManager.lua ]]
--- VERSION: V4.1 (Rounded Floating Content Area)
+-- VERSION: V5 (Premium Icons + Perfect Header)
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -16,7 +16,7 @@ Library.Themes = {
         Main        = Color3.fromRGB(20, 20, 20),
         Header      = Color3.fromRGB(25, 25, 25),
         Sidebar     = Color3.fromRGB(25, 25, 25),
-        Content     = Color3.fromRGB(32, 32, 32), -- Sedikit lebih terang biar kontras
+        Content     = Color3.fromRGB(32, 32, 32),
         Text        = Color3.fromRGB(255, 255, 255),
         SubText     = Color3.fromRGB(170, 170, 170),
         Accent      = Color3.fromRGB(115, 100, 255),
@@ -98,21 +98,21 @@ end
 
 -- [[ 3. MAIN UI CREATION ]]
 function Library:CreateWindow(title)
-    if CoreGui:FindFirstChild("WerskieeeHubV4_1") then CoreGui.WerskieeeHubV4_1:Destroy() end
+    if CoreGui:FindFirstChild("WerskieeeHubV5") then CoreGui.WerskieeeHubV5:Destroy() end
 
-    local Gui = Create("ScreenGui", {Name = "WerskieeeHubV4_1", Parent = CoreGui, ZIndexBehavior = Enum.ZIndexBehavior.Sibling})
+    local Gui = Create("ScreenGui", {Name = "WerskieeeHubV5", Parent = CoreGui, ZIndexBehavior = Enum.ZIndexBehavior.Sibling})
     
-    -- ** MAIN CONTAINER **
+    -- MAIN CONTAINER
     local Main = Create("Frame", {
         Parent = Gui, Size = UDim2.fromOffset(600, 400), Position = UDim2.fromScale(0.5, 0.5),
         AnchorPoint = Vector2.new(0.5, 0.5), BorderSizePixel = 0, ClipsDescendants = true
     })
-    Create("UICorner", {Parent = Main, CornerRadius = UDim.new(0, 12)}) -- Sedikit lebih bulat
+    Create("UICorner", {Parent = Main, CornerRadius = UDim.new(0, 10)})
     Create("UIStroke", {Parent = Main, Thickness = 1})
     ApplyTheme(Main, "BackgroundColor3", "Main")
     ApplyTheme(Main.UIStroke, "Color", "Outline")
 
-    -- ** HEADER SECTION **
+    -- HEADER (Draggable)
     local Header = Create("Frame", {
         Parent = Main, Size = UDim2.new(1, 0, 0, 40), Position = UDim2.new(0, 0, 0, 0), BorderSizePixel = 0, BackgroundTransparency = 1
     })
@@ -124,29 +124,31 @@ function Library:CreateWindow(title)
     })
     ApplyTheme(TitleLbl, "TextColor3", "Accent")
 
-    -- ** WINDOW CONTROLS **
+    -- WINDOW CONTROLS (ICONS)
     local ControlHolder = Create("Frame", {
         Parent = Header, Size = UDim2.new(0, 100, 1, 0), Position = UDim2.new(1, -100, 0, 0), BackgroundTransparency = 1
     })
-    local ControlLayout = Create("UIListLayout", {Parent = ControlHolder, FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Right, Padding = UDim.new(0, 5), SortOrder = Enum.SortOrder.LayoutOrder})
-    Create("UIPadding", {Parent = ControlHolder, PaddingRight = UDim.new(0, 10), PaddingTop = UDim.new(0, 5), PaddingBottom = UDim.new(0, 5)})
+    local ControlLayout = Create("UIListLayout", {Parent = ControlHolder, FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Right, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder})
+    Create("UIPadding", {Parent = ControlHolder, PaddingRight = UDim.new(0, 10), PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6)})
 
-    local function CreateIconBtn(iconId, callback, isClose)
+    local function CreateControlBtn(iconID, callback, isClose)
         local Btn = Create("TextButton", {
-            Parent = ControlHolder, Text = "", Size = UDim2.new(0, 30, 0, 30), AutoButtonColor = false, BackgroundTransparency = 1
+            Parent = ControlHolder, Text = "", Size = UDim2.new(0, 28, 0, 28), AutoButtonColor = false, BackgroundTransparency = 1
         })
-        Create("UICorner", {Parent = Btn, CornerRadius = UDim.new(0, 8)})
+        Create("UICorner", {Parent = Btn, CornerRadius = UDim.new(0, 6)})
         
+        -- Menggunakan Icon Gambar (AssetID)
         local Icon = Create("ImageLabel", {
-            Parent = Btn, Image = iconId, Size = UDim2.new(0, 16, 0, 16),
-            Position = UDim2.fromScale(0.5, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1
+            Parent = Btn, Image = iconID, Size = UDim2.new(0, 14, 0, 14),
+            Position = UDim2.fromScale(0.5, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1,
+            ResampleMode = Enum.ResamplerMode.Pixelated
         })
 
         if isClose then
             Icon.ImageColor3 = Color3.fromRGB(200, 200, 200)
             Btn.MouseEnter:Connect(function()
-                TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(232, 17, 35)}):Play()
-                Icon.ImageColor3 = Color3.new(1,1,1)
+                TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(232, 17, 35)}):Play() -- Red Hover
+                Icon.ImageColor3 = Color3.new(1,1,1) -- White Icon
             end)
             Btn.MouseLeave:Connect(function()
                 TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
@@ -164,29 +166,39 @@ function Library:CreateWindow(title)
         Btn.MouseButton1Click:Connect(callback)
     end
 
-    CreateIconBtn("rbxassetid://10347261010", function() Main.Visible = false end)
+    -- Icon IDs (Lucide Style - Clean)
+    local IconMin = "rbxassetid://10734919503" -- Minus Icon
+    local IconMax = "rbxassetid://10734924219" -- Square/Expand Icon (Collapses sidebar in this UI)
+    local IconClose = "rbxassetid://10734976739" -- X Icon
+
+    -- 1. Minimize (-)
+    CreateControlBtn(IconMin, function() Main.Visible = false end)
+
+    -- 2. Maximize/Collapse Sidebar (Square)
     local SidebarOpen = true
-    CreateIconBtn("rbxassetid://10347260759", function()
+    CreateControlBtn(IconMax, function()
         SidebarOpen = not SidebarOpen
-        if SidebarOpen then
-            TweenService:Create(Sidebar, TweenInfo.new(0.3), {Size = UDim2.new(0, 160, 1, -40)}):Play()
-            TweenService:Create(Content, TweenInfo.new(0.3), {Size = UDim2.new(1, -170, 1, -50), Position = UDim2.new(0, 165, 0, 45)}):Play()
-        else
-            TweenService:Create(Sidebar, TweenInfo.new(0.3), {Size = UDim2.new(0, 0, 1, -40)}):Play()
-            TweenService:Create(Content, TweenInfo.new(0.3), {Size = UDim2.new(1, -10, 1, -50), Position = UDim2.new(0, 5, 0, 45)}):Play()
-        end
-    end)
-    CreateIconBtn("rbxassetid://10347260520", function() Gui:Destroy() end, true)
+        -- Animasi Collapse Sidebar
+        local sbWidth = SidebarOpen and 160 or 0
+        local ctPos = SidebarOpen and 165 or 5
+        local ctWidth = SidebarOpen and -170 or -10
+        
+        -- Kita pakai GetChildren untuk mencari elemen karena variabel local tidak bisa diakses langsung di sini jika didefinisikan di bawah.
+        -- TAPI, karena urutan kode, kita definisikan fungsi logika setelah elemen dibuat.
+        -- (FIX: Kita pindahkan pemanggilan CreateControlBtn ke BAWAH setelah Sidebar & Content dibuat)
+    end) 
+
+    -- 3. Close (X)
+    CreateControlBtn(IconClose, function() Gui:Destroy() end, true)
 
     UserInputService.InputBegan:Connect(function(input, processed)
         if not processed and input.KeyCode == Library.ToggleKey then Main.Visible = not Main.Visible end
     end)
 
-    -- ** SIDEBAR SECTION **
+    -- SIDEBAR
     local Sidebar = Create("Frame", {
         Parent = Main, Size = UDim2.new(0, 160, 1, -40), Position = UDim2.new(0, 0, 0, 40), BorderSizePixel = 0, BackgroundTransparency = 1
     })
-
     local TabContainer = Create("ScrollingFrame", {
         Parent = Sidebar, Size = UDim2.new(1, 0, 1, 0), Position = UDim2.new(0, 0, 0, 0),
         BackgroundTransparency = 1, ScrollBarThickness = 0, CanvasSize = UDim2.new(0,0,0,0)
@@ -194,22 +206,40 @@ function Library:CreateWindow(title)
     Create("UIListLayout", {Parent = TabContainer, Padding = UDim.new(0, 5)})
     Create("UIPadding", {Parent = TabContainer, PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10), PaddingTop = UDim.new(0, 5)})
 
-    -- ** MAIN CONTENT SECTION (YANG DIUBAH JADI MELINGKAR) **
+    -- CONTENT (Rounded Floating)
     local Content = Create("Frame", {
-        Parent = Main,
-        -- Ukuran dikurangi 10px total horizontal (margin 5px kiri kanan) dan 10px vertikal (margin 5px atas bawah)
-        Size = UDim2.new(1, -170, 1, -50), 
-        -- Posisi digeser 5px dari sidebar dan 5px dari header
-        Position = UDim2.new(0, 165, 0, 45), 
+        Parent = Main, Size = UDim2.new(1, -170, 1, -50), Position = UDim2.new(0, 165, 0, 45), 
         BackgroundTransparency = 0, BorderSizePixel = 0, ClipsDescendants = true
     })
-    -- Tambahkan UICorner agar melingkar
     Create("UICorner", {Parent = Content, CornerRadius = UDim.new(0, 10)})
-    -- Opsional: Tambah garis pinggir tipis biar lebih tegas
     local ContentStroke = Create("UIStroke", {Parent = Content, Thickness = 1, Transparency = 0.5})
     ApplyTheme(Content, "BackgroundColor3", "Content")
     ApplyTheme(ContentStroke, "Color", "Outline")
 
+    -- RE-REGISTER MAXIMIZE CALLBACK (Agar bisa akses variabel Sidebar/Content)
+    -- Kita hapus tombol max yang lama dan buat baru atau kita update logicnya.
+    -- Cara termudah: Hapus semua di ControlHolder dan buat ulang di sini.
+    ControlHolder:ClearAllChildren()
+    Create("UIListLayout", {Parent = ControlHolder, FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Right, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder})
+    Create("UIPadding", {Parent = ControlHolder, PaddingRight = UDim.new(0, 10), PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6)})
+
+    -- Re-create buttons dengan akses variabel yang benar
+    CreateControlBtn("rbxassetid://10734972621", function() Main.Visible = false end) -- Min (Minus Circle)
+    
+    CreateControlBtn("rbxassetid://10734953715", function() -- Sidebar Toggle Icon
+        SidebarOpen = not SidebarOpen
+        if SidebarOpen then
+            TweenService:Create(Sidebar, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = UDim2.new(0, 160, 1, -40)}):Play()
+            TweenService:Create(Content, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = UDim2.new(1, -170, 1, -50), Position = UDim2.new(0, 165, 0, 45)}):Play()
+        else
+            TweenService:Create(Sidebar, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = UDim2.new(0, 0, 1, -40)}):Play()
+            TweenService:Create(Content, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = UDim2.new(1, -20, 1, -50), Position = UDim2.new(0, 10, 0, 45)}):Play()
+        end
+    end)
+
+    CreateControlBtn("rbxassetid://10734976739", function() Gui:Destroy() end, true) -- Close (X)
+
+    -- TABS LOGIC
     local Window = {}
     local FirstTab = true
 
@@ -250,7 +280,7 @@ function Library:CreateWindow(title)
             Page.Visible = true
             TweenService:Create(TabBtn, TweenInfo.new(0.3), {BackgroundTransparency=0}):Play()
             TweenService:Create(Indicator, TweenInfo.new(0.3), {BackgroundTransparency=0}):Play()
-            ApplyTheme(TabBtn, "BackgroundColor3", "Sidebar") -- Warna tab aktif disamakan dengan sidebar
+            ApplyTheme(TabBtn, "BackgroundColor3", "Sidebar")
             ApplyTheme(TabBtn, "TextColor3", "Accent")
         end
         TabBtn.MouseButton1Click:Connect(Activate)
@@ -258,7 +288,6 @@ function Library:CreateWindow(title)
 
         local Elements = {}
 
-        -- [[ ELEMENT: SECTION ]]
         function Elements:Section(text)
             local F = Create("Frame", {Parent = Page, Size = UDim2.new(1, 0, 0, 30), BackgroundTransparency = 1})
             local L = Create("TextLabel", {
@@ -269,7 +298,6 @@ function Library:CreateWindow(title)
             Create("Frame", {Parent = F, Size = UDim2.new(1, 0, 0, 1), Position = UDim2.new(0, 0, 1, -1), BackgroundColor3 = Library.CurrentTheme.Outline})
         end
 
-        -- [[ ELEMENT: BUTTON ]]
         function Elements:Button(text, callback)
             local B = Create("TextButton", {
                 Parent = Page, Text = "", Size = UDim2.new(1, 0, 0, 42), AutoButtonColor = false, BackgroundTransparency = 0
@@ -278,7 +306,6 @@ function Library:CreateWindow(title)
             Create("UIStroke", {Parent = B, Thickness = 1})
             ApplyTheme(B, "BackgroundColor3", "Main")
             ApplyTheme(B.UIStroke, "Color", "Outline")
-            
             local L = Create("TextLabel", {
                 Parent = B, Text = text, Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1,
                 Font = Enum.Font.GothamMedium, TextSize = 14
@@ -294,7 +321,6 @@ function Library:CreateWindow(title)
             B.MouseLeave:Connect(function() ApplyTheme(B, "BackgroundColor3", "Main") end)
         end
 
-        -- [[ ELEMENT: TOGGLE ]]
         function Elements:Toggle(text, default, callback)
             local tog = default or false
             local B = Create("TextButton", {
@@ -327,7 +353,6 @@ function Library:CreateWindow(title)
             B.MouseButton1Click:Connect(function() tog = not tog; Update(); if callback then callback(tog) end end)
         end
 
-        -- [[ ELEMENT: SLIDER ]]
         function Elements:Slider(text, min, max, default, callback)
             local val = default or min
             local F = Create("Frame", {Parent = Page, Size = UDim2.new(1, 0, 0, 50), BackgroundTransparency = 1})
@@ -368,7 +393,6 @@ function Library:CreateWindow(title)
             UserInputService.InputChanged:Connect(function(i) if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then Update(i) end end)
         end
 
-        -- [[ ELEMENT: DROPDOWN ]]
         function Elements:Dropdown(text, options, callback)
             local dropped = false
             local Container = Create("Frame", {
