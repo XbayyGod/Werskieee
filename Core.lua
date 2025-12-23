@@ -7,90 +7,39 @@ local function GetUrl(scriptName)
     return string.format("https://raw.githubusercontent.com/%s/%s/%s/%s", Owner, Repo, Branch, scriptName)
 end
 
--- 1. Panggil UIManager
-local UIManager = loadstring(game:HttpGet(GetUrl("UIManager.lua")))()
+-- 1. Load UIManager (Library Custom Kita)
+local UI = loadstring(game:HttpGet(GetUrl("UIManager.lua")))()
 
 -- 2. Buat Window
-local Window, Fluent, SaveManager, InterfaceManager = UIManager.LoadWindow("Werskieee Hub", "v1.0.0 by Iqbal")
+local Window = UI:CreateWindow({
+    Name = "Werskieee Hub"
+})
 
--- =============================================
--- MEMBUAT SIDEBAR (TABS)
--- =============================================
-local Tabs = {
-    Main = Window:AddTab({ Title = "Main", Icon = "home" }), -- Icon bisa diganti (lucide icons)
-    Combat = Window:AddTab({ Title = "Combat", Icon = "swords" }),
-    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
-}
+-- 3. Buat Tab: MAIN
+local MainTab = Window:CreateTab("Main")
 
-local Options = Fluent.Options -- Untuk mengambil value nanti
+MainTab:CreateSection("Character Info")
 
--- =============================================
--- ISI MENU (Main Tab)
--- =============================================
+MainTab:CreateButton("Print Hello", function()
+    print("Hello from custom UI!")
+end)
 
--- >> Checkbox & Toggle <<
-Tabs.Main:AddToggle("MyToggle", {
-    Title = "Auto Farm",
-    Description = "Fitur farming otomatis (safe mode)",
-    Default = false,
-    Callback = function(state)
-        print("Auto Farm status:", state)
-        -- Masukkan logika script kamu disini
+MainTab:CreateToggle("Auto Jump", false, function(State)
+    print("Auto Jump is now:", State)
+end)
+
+MainTab:CreateSection("Movement Settings")
+
+MainTab:CreateSlider("WalkSpeed", 16, 200, 16, function(Value)
+    if game.Players.LocalPlayer.Character then
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
     end
-})
+end)
 
--- >> Slider <<
-Tabs.Main:AddSlider("WalkSpeedSlider", {
-    Title = "Walk Speed",
-    Description = "Mengatur kecepatan jalan karakter",
-    Default = 16,
-    Min = 16,
-    Max = 200,
-    Rounding = 1,
-    Callback = function(Value)
-        print("Speed diubah ke:", Value)
-        -- game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
-    end
-})
+-- 4. Buat Tab: COMBAT
+local CombatTab = Window:CreateTab("Combat")
 
--- >> Menu Collapse (Section/Paragraph) <<
-local Section = Tabs.Main:AddSection("Player Stats") -- Ini judul section
-
-Tabs.Main:AddParagraph({
-    Title = "Info User",
-    Content = "Username: " .. game.Players.LocalPlayer.Name .. "\nRank: Member"
-})
-
--- =============================================
--- ISI MENU (Combat Tab)
--- =============================================
-Tabs.Combat:AddToggle("Aimbot", {
-    Title = "Aimbot",
-    Default = false
-})
-
--- Dropdown
-Tabs.Combat:AddDropdown("AimPart", {
-    Title = "Aim Part",
-    Values = {"Head", "Torso", "Random"},
-    Multi = false,
-    Default = 1,
-})
-
--- =============================================
--- FINALISASI (Agar smooth)
--- =============================================
-Window:SelectTab(1) -- Pilih tab pertama saat dibuka
-Fluent:Notify({
-    Title = "Werskieee Hub",
-    Content = "Script berhasil dimuat!",
-    Duration = 5
-})
-
--- Setup Config Manager (Biar user bisa save settingan)
-SaveManager:SetLibrary(Fluent)
-InterfaceManager:SetLibrary(Fluent)
-SaveManager:IgnoreThemeSettings()
-InterfaceManager:BuildInterfaceSection(Tabs.Settings)
-SaveManager:BuildConfigSection(Tabs.Settings)
-SaveManager:LoadAutoloadConfig()
+CombatTab:CreateSection("Aimbot Settings")
+CombatTab:CreateToggle("Enable Aimbot", false, function(State)
+    print("Aimbot:", State)
+end)
