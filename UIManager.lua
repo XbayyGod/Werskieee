@@ -224,7 +224,7 @@ function Library:CreateWindow(title_ignored)
             -- [[ SETTING JARAK (PADDING) ]]
             Create("UIPadding", {
                 Parent = Container, 
-                PaddingTop = UDim.new(0, 35),    -- << GUA GANTI JADI 35 BIAR MAKIN TURUN
+                PaddingTop = UDim.new(0, 50),    -- << GUA GANTI JADI 35 BIAR MAKIN TURUN
                 PaddingBottom = UDim.new(0, 15), -- Jarak bawah tetep 15
                 PaddingLeft = UDim.new(0, 10), 
                 PaddingRight = UDim.new(0, 10)
