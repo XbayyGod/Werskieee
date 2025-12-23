@@ -166,6 +166,8 @@ function Library:CreateWindow(title_ignored)
     local function CreateElements(ParentFrame)
         local Elements = {}
 
+        -- >> GROUP (INI YANG GUA UBAH TOTAL: HEADER -> GARIS -> JARAK -> KONTEN)
+-- [[ FUNGSI Elements:Group (VERSI FINAL - PADDING FIX) ]]
         function Elements:Group(text)
             local isOpened = true
             
