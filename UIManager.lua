@@ -140,7 +140,7 @@ function Library:CreateWindow(title_ignored) -- Parameter title tidak lagi dipak
         local accentHex = toHex(Library.CurrentTheme.Accent)
         local subTextHex = toHex(Library.CurrentTheme.SubText)
         -- Format: Main Title (Accent Color) | Version Info (SubText Color/Darker)
-        TitleLbl.Text = string.format('<font color="%s">Werskieee HUB</font> <font color="%s">| Version Code</font>', accentHex, subTextHex)
+        TitleLbl.Text = string.format('<font color="%s">Werskieee</font> <font color="%s">| 1.0</font>', accentHex, subTextHex)
     end
     
     -- Daftarkan ke callback agar berubah saat ganti tema, dan jalankan sekali di awal

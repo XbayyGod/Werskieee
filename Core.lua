@@ -12,7 +12,7 @@ local UI = loadstring(game:HttpGet(GetUrl("UIManager.lua")))()
 
 -- 2. Buat Window Utama
 -- Judul di sini akan otomatis ditimpa oleh RichText yang ada di UIManager (Werskieee HUB | Version Code)
-local Window = UI:CreateWindow("Werskieee Hub Premium")
+local Window = UI:CreateWindow("###")
 
 -- =============================================
 -- TAB 1: MAIN (Fitur Utama)
