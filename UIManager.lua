@@ -1,5 +1,5 @@
 -- [[ Filename: UIManager.lua ]]
--- VERSION: V5.4 (FIXED: Bolder & Bigger Close Icon)
+-- VERSION: V5.5 (FINAL POLISH: RichText Header with Version Code)
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -18,7 +18,7 @@ Library.Themes = {
         Sidebar     = Color3.fromRGB(25, 25, 25),
         Content     = Color3.fromRGB(32, 32, 32),
         Text        = Color3.fromRGB(255, 255, 255),
-        SubText     = Color3.fromRGB(170, 170, 170),
+        SubText     = Color3.fromRGB(150, 150, 150), -- Sedikit lebih gelap untuk efek opacity
         Accent      = Color3.fromRGB(115, 100, 255),
         Outline     = Color3.fromRGB(50, 50, 50),
         Hover       = Color3.fromRGB(45, 45, 45),
@@ -32,7 +32,7 @@ Library.Themes = {
         Sidebar     = Color3.fromRGB(20, 30, 40),
         Content     = Color3.fromRGB(28, 38, 48),
         Text        = Color3.fromRGB(230, 255, 255),
-        SubText     = Color3.fromRGB(140, 170, 170),
+        SubText     = Color3.fromRGB(130, 160, 160),
         Accent      = Color3.fromRGB(0, 190, 255),
         Outline     = Color3.fromRGB(40, 60, 80),
         Hover       = Color3.fromRGB(35, 50, 60),
@@ -46,7 +46,7 @@ Library.Themes = {
         Sidebar     = Color3.fromRGB(30, 20, 20),
         Content     = Color3.fromRGB(38, 24, 24),
         Text        = Color3.fromRGB(255, 230, 230),
-        SubText     = Color3.fromRGB(180, 140, 140),
+        SubText     = Color3.fromRGB(170, 130, 130),
         Accent      = Color3.fromRGB(220, 60, 60),
         Outline     = Color3.fromRGB(80, 40, 40),
         Hover       = Color3.fromRGB(50, 25, 25),
@@ -69,6 +69,11 @@ local function ApplyTheme(obj, prop, key)
     obj[prop] = Library.CurrentTheme[key]
 end
 
+-- Helper baru untuk RichText
+local function toHex(color)
+    return string.format("#%02X%02X%02X", color.R * 255, color.G * 255, color.B * 255)
+end
+
 function Library:SetTheme(name)
     if not Library.Themes[name] then return end
     Library.CurrentTheme = Library.Themes[name]
@@ -79,17 +84,17 @@ function Library:SetTheme(name)
 end
 
 -- [[ 3. MAIN UI CREATION ]]
-function Library:CreateWindow(title)
-    if CoreGui:FindFirstChild("WerskieeeHubV5_4") then CoreGui.WerskieeeHubV5_4:Destroy() end
-    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubV5_4") then 
-        game.Players.LocalPlayer.PlayerGui.WerskieeeHubV5_4:Destroy() 
+function Library:CreateWindow(title_ignored) -- Parameter title tidak lagi dipakai langsung
+    if CoreGui:FindFirstChild("WerskieeeHubV5_5") then CoreGui.WerskieeeHubV5_5:Destroy() end
+    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubV5_5") then 
+        game.Players.LocalPlayer.PlayerGui.WerskieeeHubV5_5:Destroy() 
     end
 
     local TargetParent = nil
     local s, r = pcall(function() return gethui() end)
     if s and r then TargetParent = r else TargetParent = game.Players.LocalPlayer:WaitForChild("PlayerGui") end
 
-    local Gui = Create("ScreenGui", {Name = "WerskieeeHubV5_4", Parent = TargetParent, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, ResetOnSpawn = false})
+    local Gui = Create("ScreenGui", {Name = "WerskieeeHubV5_5", Parent = TargetParent, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, ResetOnSpawn = false})
     
     local Main = Create("Frame", {
         Parent = Gui, Size = UDim2.fromOffset(600, 400), Position = UDim2.fromScale(0.5, 0.5),
@@ -121,11 +126,26 @@ function Library:CreateWindow(title)
         end
     end)
 
+    -- [[ MODIFIED TITLE WITH RICHTEXT ]]
     local TitleLbl = Create("TextLabel", {
-        Parent = Header, Text = title, Size = UDim2.new(1, -120, 1, 0), Position = UDim2.new(0, 20, 0, 0),
+        Parent = Header, 
+        Text = "", -- Text akan diisi oleh fungsi update di bawah
+        RichText = true, -- Aktifkan RichText
+        Size = UDim2.new(1, -120, 1, 0), Position = UDim2.new(0, 20, 0, 0),
         Font = Enum.Font.GothamBold, TextSize = 16, TextXAlignment = Enum.TextXAlignment.Left, BackgroundTransparency = 1
     })
-    ApplyTheme(TitleLbl, "TextColor3", "Accent")
+    
+    -- Fungsi untuk update teks judul berdasarkan tema saat ini
+    local function UpdateTitle()
+        local accentHex = toHex(Library.CurrentTheme.Accent)
+        local subTextHex = toHex(Library.CurrentTheme.SubText)
+        -- Format: Main Title (Accent Color) | Version Info (SubText Color/Darker)
+        TitleLbl.Text = string.format('<font color="%s">Werskieee HUB</font> <font color="%s">| Version Code</font>', accentHex, subTextHex)
+    end
+    
+    -- Daftarkan ke callback agar berubah saat ganti tema, dan jalankan sekali di awal
+    table.insert(Library.ThemeCallbacks, UpdateTitle)
+    UpdateTitle()
 
     -- CONTROLS
     local ControlHolder = Create("Frame", {
@@ -154,7 +174,7 @@ function Library:CreateWindow(title)
     ApplyTheme(Content, "BackgroundColor3", "Content")
     ApplyTheme(ContentStroke, "Color", "Outline")
 
-    -- [[ BUTTON CREATOR (With FIXED BOLD ICONS) ]]
+    -- BUTTON CREATOR
     local function CreateBtn(order, iconID, isClose, callback)
         local Btn = Create("TextButton", {
             Parent = ControlHolder, Text = "", Size = UDim2.new(0, 28, 0, 28), AutoButtonColor = false, 
@@ -162,9 +182,7 @@ function Library:CreateWindow(title)
         })
         Create("UICorner", {Parent = Btn, CornerRadius = UDim.new(0, 6)})
         
-        -- CUSTOM SIZE: Close button kita set 20px (Besar), yg lain 14px (Standar)
         local iconSize = isClose and 20 or 14 
-        
         local Icon = Create("ImageLabel", {
             Parent = Btn, Image = iconID, Size = UDim2.new(0, iconSize, 0, iconSize),
             Position = UDim2.fromScale(0.5, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1
@@ -194,9 +212,7 @@ function Library:CreateWindow(title)
 
     local IconMin   = "rbxassetid://10734896206"
     local IconMax   = "rbxassetid://10734965702"
-    
-    -- GANTI ICON X JADI YANG LEBIH TEBAL & BESAR
-    local IconClose = "rbxassetid://6031094678" 
+    local IconClose = "rbxassetid://6031094678"
 
     -- 1. Minimize
     CreateBtn(1, IconMin, false, function() Main.Visible = false end)
@@ -214,7 +230,7 @@ function Library:CreateWindow(title)
         end
     end)
 
-    -- 3. Close (Sudah diset Besar & Tebal)
+    -- 3. Close
     CreateBtn(3, IconClose, true, function() Gui:Destroy() end)
 
     UserInputService.InputBegan:Connect(function(input, processed)
