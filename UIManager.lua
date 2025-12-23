@@ -175,7 +175,7 @@ function Library:CreateWindow(title_ignored)
             -- 10 = Rapi standar
             -- 20 = Lega
             -- 0  = Nempel garis
-            local GAP_SIZE = 15  
+            local GAP_SIZE = 20  
             
             -- 1. CARD BACKGROUND
             local GroupCard = Create("Frame", {
