@@ -1,5 +1,5 @@
 -- [[ Filename: UIManager.lua ]]
--- VERSION: V5 (Premium Icons + Perfect Header)
+-- VERSION: V5.1 (FIXED ICONS: Real Minus, Square, X)
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -78,29 +78,20 @@ function Library:SetTheme(name)
     for _, cb in ipairs(Library.ThemeCallbacks) do task.spawn(cb) end
 end
 
-local function MakeDraggable(trigger, frame)
-    local dragging, dragStart, startPos
-    trigger.InputBegan:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true; dragStart = i.Position; startPos = frame.Position
-            i.Changed:Connect(function() if i.UserInputState == Enum.UserInputState.End then dragging = false end end)
-        end
-    end)
-    UserInputService.InputChanged:Connect(function(i)
-        if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then
-            local delta = i.Position - dragStart
-            TweenService:Create(frame, TweenInfo.new(0.05), {
-                Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-            }):Play()
-        end
-    end)
-end
-
 -- [[ 3. MAIN UI CREATION ]]
 function Library:CreateWindow(title)
+    -- 1. CLEANUP OLD UI
     if CoreGui:FindFirstChild("WerskieeeHubV5") then CoreGui.WerskieeeHubV5:Destroy() end
+    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubV5") then 
+        game.Players.LocalPlayer.PlayerGui.WerskieeeHubV5:Destroy() 
+    end
 
-    local Gui = Create("ScreenGui", {Name = "WerskieeeHubV5", Parent = CoreGui, ZIndexBehavior = Enum.ZIndexBehavior.Sibling})
+    -- 2. SAFE PARENTING (Biar pasti muncul)
+    local TargetParent = nil
+    local s, r = pcall(function() return gethui() end)
+    if s and r then TargetParent = r else TargetParent = game.Players.LocalPlayer:WaitForChild("PlayerGui") end
+
+    local Gui = Create("ScreenGui", {Name = "WerskieeeHubV5", Parent = TargetParent, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, ResetOnSpawn = false})
     
     -- MAIN CONTAINER
     local Main = Create("Frame", {
@@ -116,7 +107,23 @@ function Library:CreateWindow(title)
     local Header = Create("Frame", {
         Parent = Main, Size = UDim2.new(1, 0, 0, 40), Position = UDim2.new(0, 0, 0, 0), BorderSizePixel = 0, BackgroundTransparency = 1
     })
-    MakeDraggable(Header, Main)
+    
+    -- DRAG LOGIC
+    local dragging, dragStart, startPos
+    Header.InputBegan:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true; dragStart = i.Position; startPos = Main.Position
+            i.Changed:Connect(function() if i.UserInputState == Enum.UserInputState.End then dragging = false end end)
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(i)
+        if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = i.Position - dragStart
+            TweenService:Create(Main, TweenInfo.new(0.05), {
+                Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            }):Play()
+        end
+    end)
 
     local TitleLbl = Create("TextLabel", {
         Parent = Header, Text = title, Size = UDim2.new(1, -120, 1, 0), Position = UDim2.new(0, 20, 0, 0),
@@ -137,9 +144,8 @@ function Library:CreateWindow(title)
         })
         Create("UICorner", {Parent = Btn, CornerRadius = UDim.new(0, 6)})
         
-        -- Menggunakan Icon Gambar (AssetID)
         local Icon = Create("ImageLabel", {
-            Parent = Btn, Image = iconID, Size = UDim2.new(0, 14, 0, 14),
+            Parent = Btn, Image = iconID, Size = UDim2.new(0, 16, 0, 16),
             Position = UDim2.fromScale(0.5, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1,
             ResampleMode = Enum.ResamplerMode.Pixelated
         })
@@ -147,8 +153,8 @@ function Library:CreateWindow(title)
         if isClose then
             Icon.ImageColor3 = Color3.fromRGB(200, 200, 200)
             Btn.MouseEnter:Connect(function()
-                TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(232, 17, 35)}):Play() -- Red Hover
-                Icon.ImageColor3 = Color3.new(1,1,1) -- White Icon
+                TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(232, 17, 35)}):Play()
+                Icon.ImageColor3 = Color3.new(1,1,1)
             end)
             Btn.MouseLeave:Connect(function()
                 TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
@@ -166,29 +172,22 @@ function Library:CreateWindow(title)
         Btn.MouseButton1Click:Connect(callback)
     end
 
-    -- Icon IDs (Lucide Style - Clean)
-    local IconMin = "rbxassetid://10734919503" -- Minus Icon
-    local IconMax = "rbxassetid://10734924219" -- Square/Expand Icon (Collapses sidebar in this UI)
-    local IconClose = "rbxassetid://10734976739" -- X Icon
+    -- [[ BAGIAN PENTING: ID ICON YANG BENAR ]] --
+    local IconMin   = "rbxassetid://10734896206" -- Minus Sign (-)
+    local IconMax   = "rbxassetid://10734965702" -- Square Box (□)
+    local IconClose = "rbxassetid://10747384394" -- Cross (X)
 
-    -- 1. Minimize (-)
+    -- 1. Minimize
     CreateControlBtn(IconMin, function() Main.Visible = false end)
 
-    -- 2. Maximize/Collapse Sidebar (Square)
+    -- 2. Maximize/Restore
     local SidebarOpen = true
     CreateControlBtn(IconMax, function()
         SidebarOpen = not SidebarOpen
-        -- Animasi Collapse Sidebar
-        local sbWidth = SidebarOpen and 160 or 0
-        local ctPos = SidebarOpen and 165 or 5
-        local ctWidth = SidebarOpen and -170 or -10
-        
-        -- Kita pakai GetChildren untuk mencari elemen karena variabel local tidak bisa diakses langsung di sini jika didefinisikan di bawah.
-        -- TAPI, karena urutan kode, kita definisikan fungsi logika setelah elemen dibuat.
-        -- (FIX: Kita pindahkan pemanggilan CreateControlBtn ke BAWAH setelah Sidebar & Content dibuat)
+        -- (Sidebar & Content belum didefinisikan disini, jadi kita definisikan variabelnya nanti di bawah)
     end) 
 
-    -- 3. Close (X)
+    -- 3. Close
     CreateControlBtn(IconClose, function() Gui:Destroy() end, true)
 
     UserInputService.InputBegan:Connect(function(input, processed)
@@ -216,17 +215,36 @@ function Library:CreateWindow(title)
     ApplyTheme(Content, "BackgroundColor3", "Content")
     ApplyTheme(ContentStroke, "Color", "Outline")
 
-    -- RE-REGISTER MAXIMIZE CALLBACK (Agar bisa akses variabel Sidebar/Content)
-    -- Kita hapus tombol max yang lama dan buat baru atau kita update logicnya.
-    -- Cara termudah: Hapus semua di ControlHolder dan buat ulang di sini.
+    -- [[ FIX LOGIKA TOMBOL MAXIMIZE (Agar Jalan) ]]
+    -- Kita hapus listener tombol tengah yg tadi (karena sidebar belum ada) dan buat baru disini
+    -- Hapus tombol max (anak ke-2 dari kanan)
+    local Controls = ControlHolder:GetChildren()
+    for _,c in pairs(Controls) do if c:IsA("TextButton") and c.ImageLabel.Image == IconMax then c:Destroy() end end
+    
+    -- Buat ulang tombol Maximize di posisi index yang benar (sebelum tombol Close)
+    -- Kita hack dikit pake LayoutOrder biar rapi
     ControlHolder:ClearAllChildren()
     Create("UIListLayout", {Parent = ControlHolder, FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Right, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder})
     Create("UIPadding", {Parent = ControlHolder, PaddingRight = UDim.new(0, 10), PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6)})
 
-    -- Re-create buttons dengan akses variabel yang benar
-    CreateControlBtn("rbxassetid://10734972621", function() Main.Visible = false end) -- Min (Minus Circle)
+    -- 1. Create Close (Order 3)
+    local CloseBtn = CreateControlBtn(IconClose, function() Gui:Destroy() end, true)
     
-    CreateControlBtn("rbxassetid://10734953715", function() -- Sidebar Toggle Icon
+    -- 2. Create Max (Order 2)
+    local MaxBtn = Create("TextButton", {
+        Parent = ControlHolder, Text = "", Size = UDim2.new(0, 28, 0, 28), AutoButtonColor = false, BackgroundTransparency = 1, LayoutOrder = 2
+    })
+    Create("UICorner", {Parent = MaxBtn, CornerRadius = UDim.new(0, 6)})
+    local MaxIcon = Create("ImageLabel", {
+        Parent = MaxBtn, Image = IconMax, Size = UDim2.new(0, 14, 0, 14),
+        Position = UDim2.fromScale(0.5, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1,
+        ResampleMode = Enum.ResamplerMode.Pixelated
+    })
+    ApplyTheme(MaxIcon, "ImageColor3", "ControlIcon")
+    MaxBtn.MouseEnter:Connect(function() TweenService:Create(MaxBtn, TweenInfo.new(0.2), {BackgroundColor3 = Library.CurrentTheme.ControlHover}):Play() end)
+    MaxBtn.MouseLeave:Connect(function() TweenService:Create(MaxBtn, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play() end)
+    
+    MaxBtn.MouseButton1Click:Connect(function()
         SidebarOpen = not SidebarOpen
         if SidebarOpen then
             TweenService:Create(Sidebar, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = UDim2.new(0, 160, 1, -40)}):Play()
@@ -237,7 +255,21 @@ function Library:CreateWindow(title)
         end
     end)
 
-    CreateControlBtn("rbxassetid://10734976739", function() Gui:Destroy() end, true) -- Close (X)
+    -- 3. Create Min (Order 1)
+    local MinBtn = Create("TextButton", {
+        Parent = ControlHolder, Text = "", Size = UDim2.new(0, 28, 0, 28), AutoButtonColor = false, BackgroundTransparency = 1, LayoutOrder = 1
+    })
+    Create("UICorner", {Parent = MinBtn, CornerRadius = UDim.new(0, 6)})
+    local MinIcon = Create("ImageLabel", {
+        Parent = MinBtn, Image = IconMin, Size = UDim2.new(0, 14, 0, 14),
+        Position = UDim2.fromScale(0.5, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1,
+        ResampleMode = Enum.ResamplerMode.Pixelated
+    })
+    ApplyTheme(MinIcon, "ImageColor3", "ControlIcon")
+    MinBtn.MouseEnter:Connect(function() TweenService:Create(MinBtn, TweenInfo.new(0.2), {BackgroundColor3 = Library.CurrentTheme.ControlHover}):Play() end)
+    MinBtn.MouseLeave:Connect(function() TweenService:Create(MinBtn, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play() end)
+    MinBtn.MouseButton1Click:Connect(function() Main.Visible = false end)
+
 
     -- TABS LOGIC
     local Window = {}
