@@ -38,9 +38,9 @@ TeleportGroup:Button("Teleport Altar 1", function()
         
         -- Cek apakah folder map nya ada
         if workspace:FindFirstChild("! ENCHANTING ALTAR !") and workspace["! ENCHANTING ALTAR !"]:FindFirstChild("EnchantLocation") then
-            local target = workspace["! ENCHANTING ALTAR !"].EnchantLocation
+            local target = workspace["! ENCHANTING ALTAR !"].Stand
             -- Teleport logic
-            root.CFrame = target.CFrame + Vector3.new(0, 3, 0)
+            root.CFrame = (target.CFrame * CFrame.Angles(0, math.rad(-90), 0)) + Vector3.new(0, 3, 0)
         else
             warn("Tempat 'Enchanting Altar' ga ketemu bos!")
         end
