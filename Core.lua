@@ -7,39 +7,31 @@ local function GetUrl(scriptName)
     return string.format("https://raw.githubusercontent.com/%s/%s/%s/%s", Owner, Repo, Branch, scriptName)
 end
 
--- 1. Load UIManager (Library Custom Kita)
-local UI = loadstring(game:HttpGet(GetUrl("UIManager.lua")))()
+local UIManager = loadstring(game:HttpGet(GetUrl("UIManager.lua")))()
 
--- 2. Buat Window
-local Window = UI:CreateWindow({
-    Name = "Werskieee Hub"
+-- ===========================================
+-- SETTING WARNA CUSTOM DISINI
+-- ===========================================
+-- Coba ganti kode warna RGB di bawah ini:
+-- Merah: Color3.fromRGB(255, 50, 50)
+-- Ungu: Color3.fromRGB(170, 0, 255)
+-- Emas: Color3.fromRGB(255, 215, 0)
+local MyThemeColor = Color3.fromRGB(255, 0, 0) -- Saya set Merah Menyala
+
+local Window, Fluent, SaveManager, InterfaceManager = UIManager.LoadWindow(
+    "Werskieee Hub", 
+    "Private Version", 
+    MyThemeColor
+)
+
+-- Tambahkan Tab dan Fitur seperti biasa...
+local Tabs = {
+    Main = Window:AddTab({ Title = "Main", Icon = "home" }),
+}
+
+Tabs.Main:AddParagraph({
+    Title = "Welcome",
+    Content = "Script ini menggunakan tema warna custom merah!"
 })
 
--- 3. Buat Tab: MAIN
-local MainTab = Window:CreateTab("Main")
-
-MainTab:CreateSection("Character Info")
-
-MainTab:CreateButton("Print Hello", function()
-    print("Hello from custom UI!")
-end)
-
-MainTab:CreateToggle("Auto Jump", false, function(State)
-    print("Auto Jump is now:", State)
-end)
-
-MainTab:CreateSection("Movement Settings")
-
-MainTab:CreateSlider("WalkSpeed", 16, 200, 16, function(Value)
-    if game.Players.LocalPlayer.Character then
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
-    end
-end)
-
--- 4. Buat Tab: COMBAT
-local CombatTab = Window:CreateTab("Combat")
-
-CombatTab:CreateSection("Aimbot Settings")
-CombatTab:CreateToggle("Enable Aimbot", false, function(State)
-    print("Aimbot:", State)
-end)
+Window:SelectTab(1)
