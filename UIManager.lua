@@ -1,5 +1,5 @@
 -- [[ Filename: UIManager.lua ]]
--- VERSION: V9 (FIXED: Better Spacing, Divider Line, & Seamless Grouping)
+-- VERSION: CLEAN SLATE (With Fixed Group Spacing & Divider)
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -26,36 +26,6 @@ Library.Themes = {
         ControlIcon = Color3.fromRGB(200, 200, 200),
         ControlHover= Color3.fromRGB(70, 70, 70),
         ControlBg   = Color3.fromRGB(45, 45, 45)
-    },
-    Ocean = {
-        Main        = Color3.fromRGB(15, 25, 35),
-        Header      = Color3.fromRGB(20, 30, 40),
-        Sidebar     = Color3.fromRGB(20, 30, 40),
-        CardBg      = Color3.fromRGB(30, 45, 55),
-        Text        = Color3.fromRGB(230, 255, 255),
-        SubText     = Color3.fromRGB(140, 170, 170),
-        Accent      = Color3.fromRGB(0, 190, 255),
-        Outline     = Color3.fromRGB(50, 70, 90),
-        Hover       = Color3.fromRGB(40, 60, 70),
-        Dropdown    = Color3.fromRGB(35, 50, 60),
-        ControlIcon = Color3.fromRGB(180, 220, 255),
-        ControlHover= Color3.fromRGB(50, 70, 90),
-        ControlBg   = Color3.fromRGB(35, 55, 65)
-    },
-    Blood = {
-        Main        = Color3.fromRGB(25, 18, 18),
-        Header      = Color3.fromRGB(30, 20, 20),
-        Sidebar     = Color3.fromRGB(30, 20, 20),
-        CardBg      = Color3.fromRGB(45, 30, 30),
-        Text        = Color3.fromRGB(255, 230, 230),
-        SubText     = Color3.fromRGB(180, 140, 140),
-        Accent      = Color3.fromRGB(220, 60, 60),
-        Outline     = Color3.fromRGB(90, 50, 50),
-        Hover       = Color3.fromRGB(60, 35, 35),
-        Dropdown    = Color3.fromRGB(50, 30, 30),
-        ControlIcon = Color3.fromRGB(255, 200, 200),
-        ControlHover= Color3.fromRGB(100, 50, 50),
-        ControlBg   = Color3.fromRGB(55, 35, 35)
     }
 }
 Library.CurrentTheme = Library.Themes.Midnight
@@ -87,16 +57,16 @@ end
 
 -- [[ 3. MAIN UI GENERATOR ]]
 function Library:CreateWindow(title_ignored)
-    if CoreGui:FindFirstChild("WerskieeeHubV9") then CoreGui.WerskieeeHubV9:Destroy() end
-    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubV9") then 
-        game.Players.LocalPlayer.PlayerGui.WerskieeeHubV9:Destroy() 
+    if CoreGui:FindFirstChild("WerskieeeHubClean") then CoreGui.WerskieeeHubClean:Destroy() end
+    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubClean") then 
+        game.Players.LocalPlayer.PlayerGui.WerskieeeHubClean:Destroy() 
     end
 
     local TargetParent = nil
     local s, r = pcall(function() return gethui() end)
     if s and r then TargetParent = r else TargetParent = game.Players.LocalPlayer:WaitForChild("PlayerGui") end
 
-    local Gui = Create("ScreenGui", {Name = "WerskieeeHubV9", Parent = TargetParent, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, ResetOnSpawn = false})
+    local Gui = Create("ScreenGui", {Name = "WerskieeeHubClean", Parent = TargetParent, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, ResetOnSpawn = false})
     
     local Main = Create("Frame", {
         Parent = Gui, Size = UDim2.fromOffset(600, 400), Position = UDim2.fromScale(0.5, 0.5),
@@ -207,11 +177,11 @@ function Library:CreateWindow(title_ignored)
     local function CreateElements(ParentFrame)
         local Elements = {}
 
-        -- >> GROUP (FIXED SECTION DROPDOWN STYLE)
+        -- >> GROUP (INI YANG GUA UBAH TOTAL: HEADER -> GARIS -> JARAK -> KONTEN)
         function Elements:Group(text)
             local isOpened = true
             
-            -- WADAH UTAMA (Card)
+            -- 1. CARD BACKGROUND (Wadah Utama)
             local GroupCard = Create("Frame", {
                 Parent = ParentFrame, 
                 Size = UDim2.new(1, 0, 0, 40), 
@@ -226,9 +196,9 @@ function Library:CreateWindow(title_ignored)
                 Parent = GroupCard, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 0)
             })
 
-            -- 1. HEADER (Bagian "Dropdown" nya)
+            -- 2. HEADER GROUP (Judul + Panah)
             local HeaderFrame = Create("TextButton", {
-                Parent = GroupCard, Text = "", Size = UDim2.new(1, 0, 0, 40),
+                Parent = GroupCard, Text = "", Size = UDim2.new(1, 0, 0, 40), -- Tinggi Header
                 AutoButtonColor = false, LayoutOrder = 0, BorderSizePixel = 0,
                 BackgroundTransparency = 1
             })
@@ -236,16 +206,9 @@ function Library:CreateWindow(title_ignored)
             local Label = Create("TextLabel", {
                 Parent = HeaderFrame, Text = text, Size = UDim2.new(1, -35, 1, 0), Position = UDim2.new(0, 12, 0, 0),
                 TextXAlignment = Enum.TextXAlignment.Left, Font = Enum.Font.GothamBold, 
-                TextSize = 15, BackgroundTransparency = 1
+                TextSize = 14, BackgroundTransparency = 1
             })
             ApplyTheme(Label, "TextColor3", "Accent")
-
-            -- DIVIDER LINE (Biar keliatan kayak Section beneran)
-            local Divider = Create("Frame", {
-                Parent = HeaderFrame, Size = UDim2.new(1, -24, 0, 1), Position = UDim2.new(0, 12, 1, -1),
-                BorderSizePixel = 0
-            })
-            ApplyTheme(Divider, "BackgroundColor3", "Outline")
 
             local Arrow = Create("ImageLabel", {
                 Parent = HeaderFrame, Image = "rbxassetid://6034818372", Size = UDim2.new(0, 18, 0, 18),
@@ -253,33 +216,46 @@ function Library:CreateWindow(title_ignored)
             })
             ApplyTheme(Arrow, "ImageColor3", "SubText")
 
-            -- 2. WADAH KONTEN (Menu)
+            -- 3. DIVIDER (Garis Pemisah)
+            local Divider = Create("Frame", {
+                Parent = GroupCard, Size = UDim2.new(1, 0, 0, 1), LayoutOrder = 1, BorderSizePixel = 0
+            })
+            ApplyTheme(Divider, "BackgroundColor3", "Outline")
+            
+            -- 4. CONTAINER KONTEN (Isi Menu)
             local Container = Create("Frame", {
-                Parent = GroupCard, Size = UDim2.new(1, 0, 0, 0), LayoutOrder = 1,
+                Parent = GroupCard, Size = UDim2.new(1, 0, 0, 0), LayoutOrder = 2,
                 BackgroundTransparency = 1
             })
             local ContainerLayout = Create("UIListLayout", {
                 Parent = Container, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4)
             })
             
-            -- Padding di dalam container (DILEBARIN BIAR ADA JARAK)
+            -- PADDING (Disini kuncinya biar ada jarak dari garis ke konten)
             Create("UIPadding", {
                 Parent = Container, 
-                PaddingTop = UDim.new(0, 15),    -- Jarak atas ditambah biar ga mepet header
-                PaddingBottom = UDim.new(0, 15), -- Jarak bawah
+                PaddingTop = UDim.new(0, 15),    -- Jarak Atas (Dari Garis ke Menu Pertama)
+                PaddingBottom = UDim.new(0, 15), -- Jarak Bawah
                 PaddingLeft = UDim.new(0, 10), 
                 PaddingRight = UDim.new(0, 10)
             })
 
             local function UpdateSize()
                 local contentHeight = ContainerLayout.AbsoluteContentSize.Y
-                local paddingY = 30 -- Total padding (15 top + 15 bottom)
-                local targetHeight = isOpened and (40 + contentHeight + paddingY) or 40
+                local headerHeight = 40
+                local dividerHeight = 1
+                local paddingHeight = 30 -- (15 Top + 15 Bottom)
+                
+                -- Hitung total tinggi kalau dibuka
+                local fullHeight = headerHeight + dividerHeight + contentHeight + paddingHeight
+                local targetHeight = isOpened and fullHeight or headerHeight
                 
                 TweenService:Create(GroupCard, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                     Size = UDim2.new(1, 0, 0, targetHeight)
                 }):Play()
                 TweenService:Create(Arrow, TweenInfo.new(0.3), {Rotation = isOpened and 180 or 0}):Play()
+                
+                -- Sembunyikan garis kalau ditutup
                 TweenService:Create(Divider, TweenInfo.new(0.3), {BackgroundTransparency = isOpened and 0 or 1}):Play()
             end
             
@@ -427,7 +403,7 @@ function Library:CreateWindow(title_ignored)
                 BorderSizePixel = 0
             })
             Create("UICorner", {Parent = List, CornerRadius = UDim.new(0, 6)})
-            ApplyTheme(List, "BackgroundColor3", "CardBg") -- List tetap punya background
+            ApplyTheme(List, "BackgroundColor3", "CardBg")
             local ListStroke = Create("UIStroke", {Parent = List, Thickness = 1})
             ApplyTheme(ListStroke, "Color", "Outline")
 
