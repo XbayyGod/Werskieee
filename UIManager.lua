@@ -1,5 +1,5 @@
 -- [[ Filename: UIManager.lua ]]
--- VERSION: V5.1 (FIXED ICONS: Real Minus, Square, X)
+-- VERSION: V5.2 (FIXED: X Button on Right, Correct Order: Min - Max - Close)
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -80,20 +80,18 @@ end
 
 -- [[ 3. MAIN UI CREATION ]]
 function Library:CreateWindow(title)
-    -- 1. CLEANUP OLD UI
-    if CoreGui:FindFirstChild("WerskieeeHubV5") then CoreGui.WerskieeeHubV5:Destroy() end
-    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubV5") then 
-        game.Players.LocalPlayer.PlayerGui.WerskieeeHubV5:Destroy() 
+    if CoreGui:FindFirstChild("WerskieeeHubV5_2") then CoreGui.WerskieeeHubV5_2:Destroy() end
+    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubV5_2") then 
+        game.Players.LocalPlayer.PlayerGui.WerskieeeHubV5_2:Destroy() 
     end
 
-    -- 2. SAFE PARENTING (Biar pasti muncul)
     local TargetParent = nil
     local s, r = pcall(function() return gethui() end)
     if s and r then TargetParent = r else TargetParent = game.Players.LocalPlayer:WaitForChild("PlayerGui") end
 
-    local Gui = Create("ScreenGui", {Name = "WerskieeeHubV5", Parent = TargetParent, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, ResetOnSpawn = false})
+    local Gui = Create("ScreenGui", {Name = "WerskieeeHubV5_2", Parent = TargetParent, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, ResetOnSpawn = false})
     
-    -- MAIN CONTAINER
+    -- MAIN
     local Main = Create("Frame", {
         Parent = Gui, Size = UDim2.fromOffset(600, 400), Position = UDim2.fromScale(0.5, 0.5),
         AnchorPoint = Vector2.new(0.5, 0.5), BorderSizePixel = 0, ClipsDescendants = true
@@ -103,12 +101,12 @@ function Library:CreateWindow(title)
     ApplyTheme(Main, "BackgroundColor3", "Main")
     ApplyTheme(Main.UIStroke, "Color", "Outline")
 
-    -- HEADER (Draggable)
+    -- HEADER
     local Header = Create("Frame", {
         Parent = Main, Size = UDim2.new(1, 0, 0, 40), Position = UDim2.new(0, 0, 0, 0), BorderSizePixel = 0, BackgroundTransparency = 1
     })
     
-    -- DRAG LOGIC
+    -- Drag Logic
     local dragging, dragStart, startPos
     Header.InputBegan:Connect(function(i)
         if i.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -131,23 +129,50 @@ function Library:CreateWindow(title)
     })
     ApplyTheme(TitleLbl, "TextColor3", "Accent")
 
-    -- WINDOW CONTROLS (ICONS)
+    -- CONTROLS HOLDER
     local ControlHolder = Create("Frame", {
         Parent = Header, Size = UDim2.new(0, 100, 1, 0), Position = UDim2.new(1, -100, 0, 0), BackgroundTransparency = 1
     })
-    local ControlLayout = Create("UIListLayout", {Parent = ControlHolder, FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Right, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder})
+    Create("UIListLayout", {Parent = ControlHolder, FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Right, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder})
     Create("UIPadding", {Parent = ControlHolder, PaddingRight = UDim.new(0, 10), PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6)})
 
-    local function CreateControlBtn(iconID, callback, isClose)
+    -- SIDEBAR & CONTENT (Defined first so buttons can access them)
+    local Sidebar = Create("Frame", {
+        Parent = Main, Size = UDim2.new(0, 160, 1, -40), Position = UDim2.new(0, 0, 0, 40), BorderSizePixel = 0, BackgroundTransparency = 1
+    })
+    local TabContainer = Create("ScrollingFrame", {
+        Parent = Sidebar, Size = UDim2.new(1, 0, 1, 0), Position = UDim2.new(0, 0, 0, 0),
+        BackgroundTransparency = 1, ScrollBarThickness = 0, CanvasSize = UDim2.new(0,0,0,0)
+    })
+    Create("UIListLayout", {Parent = TabContainer, Padding = UDim.new(0, 5)})
+    Create("UIPadding", {Parent = TabContainer, PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10), PaddingTop = UDim.new(0, 5)})
+
+    local Content = Create("Frame", {
+        Parent = Main, Size = UDim2.new(1, -170, 1, -50), Position = UDim2.new(0, 165, 0, 45), 
+        BackgroundTransparency = 0, BorderSizePixel = 0, ClipsDescendants = true
+    })
+    Create("UICorner", {Parent = Content, CornerRadius = UDim.new(0, 10)})
+    local ContentStroke = Create("UIStroke", {Parent = Content, Thickness = 1, Transparency = 0.5})
+    ApplyTheme(Content, "BackgroundColor3", "Content")
+    ApplyTheme(ContentStroke, "Color", "Outline")
+
+    -- [[ WINDOW CONTROLS - FIXED ORDER ]]
+    
+    -- Icon Assets
+    local IconMin   = "rbxassetid://10734896206" -- Minus
+    local IconMax   = "rbxassetid://10734965702" -- Square
+    local IconClose = "rbxassetid://10747384394" -- Cross
+
+    local function CreateBtn(order, iconID, isClose, callback)
         local Btn = Create("TextButton", {
-            Parent = ControlHolder, Text = "", Size = UDim2.new(0, 28, 0, 28), AutoButtonColor = false, BackgroundTransparency = 1
+            Parent = ControlHolder, Text = "", Size = UDim2.new(0, 28, 0, 28), AutoButtonColor = false, 
+            BackgroundTransparency = 1, LayoutOrder = order -- INI KUNCINYA
         })
         Create("UICorner", {Parent = Btn, CornerRadius = UDim.new(0, 6)})
         
         local Icon = Create("ImageLabel", {
-            Parent = Btn, Image = iconID, Size = UDim2.new(0, 16, 0, 16),
-            Position = UDim2.fromScale(0.5, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1,
-            ResampleMode = Enum.ResamplerMode.Pixelated
+            Parent = Btn, Image = iconID, Size = UDim2.new(0, 14, 0, 14),
+            Position = UDim2.fromScale(0.5, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1
         })
 
         if isClose then
@@ -172,79 +197,12 @@ function Library:CreateWindow(title)
         Btn.MouseButton1Click:Connect(callback)
     end
 
-    -- [[ BAGIAN PENTING: ID ICON YANG BENAR ]] --
-    local IconMin   = "rbxassetid://10734896206" -- Minus Sign (-)
-    local IconMax   = "rbxassetid://10734965702" -- Square Box (□)
-    local IconClose = "rbxassetid://10747384394" -- Cross (X)
+    -- 1. MINIMIZE (Order 1 - Paling Kiri)
+    CreateBtn(1, IconMin, false, function() Main.Visible = false end)
 
-    -- 1. Minimize
-    CreateControlBtn(IconMin, function() Main.Visible = false end)
-
-    -- 2. Maximize/Restore
+    -- 2. MAXIMIZE (Order 2 - Tengah)
     local SidebarOpen = true
-    CreateControlBtn(IconMax, function()
-        SidebarOpen = not SidebarOpen
-        -- (Sidebar & Content belum didefinisikan disini, jadi kita definisikan variabelnya nanti di bawah)
-    end) 
-
-    -- 3. Close
-    CreateControlBtn(IconClose, function() Gui:Destroy() end, true)
-
-    UserInputService.InputBegan:Connect(function(input, processed)
-        if not processed and input.KeyCode == Library.ToggleKey then Main.Visible = not Main.Visible end
-    end)
-
-    -- SIDEBAR
-    local Sidebar = Create("Frame", {
-        Parent = Main, Size = UDim2.new(0, 160, 1, -40), Position = UDim2.new(0, 0, 0, 40), BorderSizePixel = 0, BackgroundTransparency = 1
-    })
-    local TabContainer = Create("ScrollingFrame", {
-        Parent = Sidebar, Size = UDim2.new(1, 0, 1, 0), Position = UDim2.new(0, 0, 0, 0),
-        BackgroundTransparency = 1, ScrollBarThickness = 0, CanvasSize = UDim2.new(0,0,0,0)
-    })
-    Create("UIListLayout", {Parent = TabContainer, Padding = UDim.new(0, 5)})
-    Create("UIPadding", {Parent = TabContainer, PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10), PaddingTop = UDim.new(0, 5)})
-
-    -- CONTENT (Rounded Floating)
-    local Content = Create("Frame", {
-        Parent = Main, Size = UDim2.new(1, -170, 1, -50), Position = UDim2.new(0, 165, 0, 45), 
-        BackgroundTransparency = 0, BorderSizePixel = 0, ClipsDescendants = true
-    })
-    Create("UICorner", {Parent = Content, CornerRadius = UDim.new(0, 10)})
-    local ContentStroke = Create("UIStroke", {Parent = Content, Thickness = 1, Transparency = 0.5})
-    ApplyTheme(Content, "BackgroundColor3", "Content")
-    ApplyTheme(ContentStroke, "Color", "Outline")
-
-    -- [[ FIX LOGIKA TOMBOL MAXIMIZE (Agar Jalan) ]]
-    -- Kita hapus listener tombol tengah yg tadi (karena sidebar belum ada) dan buat baru disini
-    -- Hapus tombol max (anak ke-2 dari kanan)
-    local Controls = ControlHolder:GetChildren()
-    for _,c in pairs(Controls) do if c:IsA("TextButton") and c.ImageLabel.Image == IconMax then c:Destroy() end end
-    
-    -- Buat ulang tombol Maximize di posisi index yang benar (sebelum tombol Close)
-    -- Kita hack dikit pake LayoutOrder biar rapi
-    ControlHolder:ClearAllChildren()
-    Create("UIListLayout", {Parent = ControlHolder, FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Right, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder})
-    Create("UIPadding", {Parent = ControlHolder, PaddingRight = UDim.new(0, 10), PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6)})
-
-    -- 1. Create Close (Order 3)
-    local CloseBtn = CreateControlBtn(IconClose, function() Gui:Destroy() end, true)
-    
-    -- 2. Create Max (Order 2)
-    local MaxBtn = Create("TextButton", {
-        Parent = ControlHolder, Text = "", Size = UDim2.new(0, 28, 0, 28), AutoButtonColor = false, BackgroundTransparency = 1, LayoutOrder = 2
-    })
-    Create("UICorner", {Parent = MaxBtn, CornerRadius = UDim.new(0, 6)})
-    local MaxIcon = Create("ImageLabel", {
-        Parent = MaxBtn, Image = IconMax, Size = UDim2.new(0, 14, 0, 14),
-        Position = UDim2.fromScale(0.5, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1,
-        ResampleMode = Enum.ResamplerMode.Pixelated
-    })
-    ApplyTheme(MaxIcon, "ImageColor3", "ControlIcon")
-    MaxBtn.MouseEnter:Connect(function() TweenService:Create(MaxBtn, TweenInfo.new(0.2), {BackgroundColor3 = Library.CurrentTheme.ControlHover}):Play() end)
-    MaxBtn.MouseLeave:Connect(function() TweenService:Create(MaxBtn, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play() end)
-    
-    MaxBtn.MouseButton1Click:Connect(function()
+    CreateBtn(2, IconMax, false, function()
         SidebarOpen = not SidebarOpen
         if SidebarOpen then
             TweenService:Create(Sidebar, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = UDim2.new(0, 160, 1, -40)}):Play()
@@ -255,23 +213,15 @@ function Library:CreateWindow(title)
         end
     end)
 
-    -- 3. Create Min (Order 1)
-    local MinBtn = Create("TextButton", {
-        Parent = ControlHolder, Text = "", Size = UDim2.new(0, 28, 0, 28), AutoButtonColor = false, BackgroundTransparency = 1, LayoutOrder = 1
-    })
-    Create("UICorner", {Parent = MinBtn, CornerRadius = UDim.new(0, 6)})
-    local MinIcon = Create("ImageLabel", {
-        Parent = MinBtn, Image = IconMin, Size = UDim2.new(0, 14, 0, 14),
-        Position = UDim2.fromScale(0.5, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1,
-        ResampleMode = Enum.ResamplerMode.Pixelated
-    })
-    ApplyTheme(MinIcon, "ImageColor3", "ControlIcon")
-    MinBtn.MouseEnter:Connect(function() TweenService:Create(MinBtn, TweenInfo.new(0.2), {BackgroundColor3 = Library.CurrentTheme.ControlHover}):Play() end)
-    MinBtn.MouseLeave:Connect(function() TweenService:Create(MinBtn, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play() end)
-    MinBtn.MouseButton1Click:Connect(function() Main.Visible = false end)
+    -- 3. CLOSE (Order 3 - Paling Kanan)
+    CreateBtn(3, IconClose, true, function() Gui:Destroy() end)
 
+    -- KEYBIND TOGGLE
+    UserInputService.InputBegan:Connect(function(input, processed)
+        if not processed and input.KeyCode == Library.ToggleKey then Main.Visible = not Main.Visible end
+    end)
 
-    -- TABS LOGIC
+    -- TABS
     local Window = {}
     local FirstTab = true
 
