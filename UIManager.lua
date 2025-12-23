@@ -166,7 +166,6 @@ function Library:CreateWindow(title_ignored)
     local function CreateElements(ParentFrame)
         local Elements = {}
 
-       -- [[ FUNGSI Elements:Group (VERSI FINAL - PADDING FIX) ]]
         function Elements:Group(text)
             local isOpened = true
             
@@ -270,12 +269,6 @@ function Library:CreateWindow(title_ignored)
                     end)
                 end
             end
-            
-            ContainerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() if isOpened then UpdateSize() end end)
-            HeaderFrame.MouseButton1Click:Connect(function() isOpened = not isOpened; UpdateSize() end)
-
-            return CreateElements(Container)
-        end
             
             ContainerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() if isOpened then UpdateSize() end end)
             HeaderFrame.MouseButton1Click:Connect(function() isOpened = not isOpened; UpdateSize() end)
