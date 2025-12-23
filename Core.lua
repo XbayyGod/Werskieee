@@ -7,64 +7,40 @@ local function GetUrl(scriptName)
     return string.format("https://raw.githubusercontent.com/%s/%s/%s/%s", Owner, Repo, Branch, scriptName)
 end
 
--- 1. Load Engine V2
 local UI = loadstring(game:HttpGet(GetUrl("UIManager.lua")))()
 
--- 2. Buat Window
+-- Title Font size sudah diperbaiki di UIManager agar tidak kegedean
 local Window = UI:CreateWindow("Werskieee Hub Premium")
 
--- =============================================
--- TAB: COMBAT
--- =============================================
-local Combat = Window:Tab("Combat")
+-- [[ TAB MAIN ]]
+local Main = Window:Tab("Main")
 
-Combat:Section("Aimbot Settings")
-
-Combat:Toggle("Enable Aimbot", false, function(state)
-    print("Aimbot Status:", state)
+Main:Section("Combat Features")
+Main:Toggle("Auto Aimbot", false, function(v)
+    print("Aimbot:", v)
+end)
+Main:Toggle("Silent Aim", true, function(v)
+    print("Silent Aim:", v)
 end)
 
-Combat:Slider("FOV Radius", 10, 500, 100, function(val)
-    print("FOV:", val)
-end)
-
-Combat:Button("Silent Aim (Risk)", function()
-    print("Silent aim enabled")
-end)
-
--- =============================================
--- TAB: PLAYER
--- =============================================
-local PlayerTab = Window:Tab("Player")
-
-PlayerTab:Section("Movement")
-
-PlayerTab:Slider("WalkSpeed", 16, 250, 16, function(val)
+Main:Section("Local Player")
+Main:Slider("WalkSpeed", 16, 250, 16, function(v)
     if game.Players.LocalPlayer.Character then
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = val
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = v
     end
 end)
 
-PlayerTab:Slider("JumpPower", 50, 300, 50, function(val)
-    if game.Players.LocalPlayer.Character then
-        game.Players.LocalPlayer.Character.Humanoid.JumpPower = val
-    end
-end)
-
-PlayerTab:Toggle("Infinite Jump", false, function(s)
-    print("Inf jump:", s)
-end)
-
--- =============================================
--- TAB: SETTINGS (Theme Changer)
--- =============================================
+-- [[ TAB SETTINGS ]]
 local Settings = Window:Tab("Settings")
 
-Settings:Section("Interface Theme")
--- Ini tombol warna-warni buat ganti tema
-Settings:ThemeSwitcher()
+Settings:Section("Theme")
+
+-- Nah ini dia Dropdown untuk ganti tema (bukan tombol berjejer lagi)
+Settings:Dropdown("Select Interface Theme", {"Midnight", "Ocean", "Blood"}, function(selected)
+    UI:SetTheme(selected)
+end)
 
 Settings:Section("Other")
 Settings:Button("Unload Script", function()
-    game.CoreGui:FindFirstChild("WerskieeeHubV2"):Destroy()
+    game.CoreGui:FindFirstChild("WerskieeeHubFinal"):Destroy()
 end)
