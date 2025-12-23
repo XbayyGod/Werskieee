@@ -1,5 +1,5 @@
 -- [[ Filename: UIManager.lua ]]
--- VERSION: V5.3 (FIXED OPTICAL SIZE: Close Icon is visually balanced)
+-- VERSION: V5.4 (FIXED: Bolder & Bigger Close Icon)
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -80,16 +80,16 @@ end
 
 -- [[ 3. MAIN UI CREATION ]]
 function Library:CreateWindow(title)
-    if CoreGui:FindFirstChild("WerskieeeHubV5_3") then CoreGui.WerskieeeHubV5_3:Destroy() end
-    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubV5_3") then 
-        game.Players.LocalPlayer.PlayerGui.WerskieeeHubV5_3:Destroy() 
+    if CoreGui:FindFirstChild("WerskieeeHubV5_4") then CoreGui.WerskieeeHubV5_4:Destroy() end
+    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubV5_4") then 
+        game.Players.LocalPlayer.PlayerGui.WerskieeeHubV5_4:Destroy() 
     end
 
     local TargetParent = nil
     local s, r = pcall(function() return gethui() end)
     if s and r then TargetParent = r else TargetParent = game.Players.LocalPlayer:WaitForChild("PlayerGui") end
 
-    local Gui = Create("ScreenGui", {Name = "WerskieeeHubV5_3", Parent = TargetParent, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, ResetOnSpawn = false})
+    local Gui = Create("ScreenGui", {Name = "WerskieeeHubV5_4", Parent = TargetParent, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, ResetOnSpawn = false})
     
     local Main = Create("Frame", {
         Parent = Gui, Size = UDim2.fromOffset(600, 400), Position = UDim2.fromScale(0.5, 0.5),
@@ -154,7 +154,7 @@ function Library:CreateWindow(title)
     ApplyTheme(Content, "BackgroundColor3", "Content")
     ApplyTheme(ContentStroke, "Color", "Outline")
 
-    -- [[ BUTTON CREATOR (With Optical Size Fix) ]]
+    -- [[ BUTTON CREATOR (With FIXED BOLD ICONS) ]]
     local function CreateBtn(order, iconID, isClose, callback)
         local Btn = Create("TextButton", {
             Parent = ControlHolder, Text = "", Size = UDim2.new(0, 28, 0, 28), AutoButtonColor = false, 
@@ -162,8 +162,8 @@ function Library:CreateWindow(title)
         })
         Create("UICorner", {Parent = Btn, CornerRadius = UDim.new(0, 6)})
         
-        -- FIX SIZE DISINI: Kalau Close Button, sizenya 16px. Kalau yg lain 14px.
-        local iconSize = isClose and 16 or 14 
+        -- CUSTOM SIZE: Close button kita set 20px (Besar), yg lain 14px (Standar)
+        local iconSize = isClose and 20 or 14 
         
         local Icon = Create("ImageLabel", {
             Parent = Btn, Image = iconID, Size = UDim2.new(0, iconSize, 0, iconSize),
@@ -194,12 +194,14 @@ function Library:CreateWindow(title)
 
     local IconMin   = "rbxassetid://10734896206"
     local IconMax   = "rbxassetid://10734965702"
-    local IconClose = "rbxassetid://10747384394"
+    
+    -- GANTI ICON X JADI YANG LEBIH TEBAL & BESAR
+    local IconClose = "rbxassetid://6031094678" 
 
-    -- 1. Minimize (Left)
+    -- 1. Minimize
     CreateBtn(1, IconMin, false, function() Main.Visible = false end)
 
-    -- 2. Maximize (Center)
+    -- 2. Maximize
     local SidebarOpen = true
     CreateBtn(2, IconMax, false, function()
         SidebarOpen = not SidebarOpen
@@ -212,7 +214,7 @@ function Library:CreateWindow(title)
         end
     end)
 
-    -- 3. Close (Right - Fixed Size)
+    -- 3. Close (Sudah diset Besar & Tebal)
     CreateBtn(3, IconClose, true, function() Gui:Destroy() end)
 
     UserInputService.InputBegan:Connect(function(input, processed)
