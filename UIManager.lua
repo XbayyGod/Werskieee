@@ -1,5 +1,5 @@
 -- [[ Filename: UIManager.lua ]]
--- VERSION: V5.2 (FIXED: X Button on Right, Correct Order: Min - Max - Close)
+-- VERSION: V5.3 (FIXED OPTICAL SIZE: Close Icon is visually balanced)
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -80,18 +80,17 @@ end
 
 -- [[ 3. MAIN UI CREATION ]]
 function Library:CreateWindow(title)
-    if CoreGui:FindFirstChild("WerskieeeHubV5_2") then CoreGui.WerskieeeHubV5_2:Destroy() end
-    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubV5_2") then 
-        game.Players.LocalPlayer.PlayerGui.WerskieeeHubV5_2:Destroy() 
+    if CoreGui:FindFirstChild("WerskieeeHubV5_3") then CoreGui.WerskieeeHubV5_3:Destroy() end
+    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubV5_3") then 
+        game.Players.LocalPlayer.PlayerGui.WerskieeeHubV5_3:Destroy() 
     end
 
     local TargetParent = nil
     local s, r = pcall(function() return gethui() end)
     if s and r then TargetParent = r else TargetParent = game.Players.LocalPlayer:WaitForChild("PlayerGui") end
 
-    local Gui = Create("ScreenGui", {Name = "WerskieeeHubV5_2", Parent = TargetParent, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, ResetOnSpawn = false})
+    local Gui = Create("ScreenGui", {Name = "WerskieeeHubV5_3", Parent = TargetParent, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, ResetOnSpawn = false})
     
-    -- MAIN
     local Main = Create("Frame", {
         Parent = Gui, Size = UDim2.fromOffset(600, 400), Position = UDim2.fromScale(0.5, 0.5),
         AnchorPoint = Vector2.new(0.5, 0.5), BorderSizePixel = 0, ClipsDescendants = true
@@ -106,7 +105,6 @@ function Library:CreateWindow(title)
         Parent = Main, Size = UDim2.new(1, 0, 0, 40), Position = UDim2.new(0, 0, 0, 0), BorderSizePixel = 0, BackgroundTransparency = 1
     })
     
-    -- Drag Logic
     local dragging, dragStart, startPos
     Header.InputBegan:Connect(function(i)
         if i.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -129,14 +127,14 @@ function Library:CreateWindow(title)
     })
     ApplyTheme(TitleLbl, "TextColor3", "Accent")
 
-    -- CONTROLS HOLDER
+    -- CONTROLS
     local ControlHolder = Create("Frame", {
         Parent = Header, Size = UDim2.new(0, 100, 1, 0), Position = UDim2.new(1, -100, 0, 0), BackgroundTransparency = 1
     })
     Create("UIListLayout", {Parent = ControlHolder, FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Right, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder})
     Create("UIPadding", {Parent = ControlHolder, PaddingRight = UDim.new(0, 10), PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6)})
 
-    -- SIDEBAR & CONTENT (Defined first so buttons can access them)
+    -- SIDEBAR & CONTENT VARIABLES
     local Sidebar = Create("Frame", {
         Parent = Main, Size = UDim2.new(0, 160, 1, -40), Position = UDim2.new(0, 0, 0, 40), BorderSizePixel = 0, BackgroundTransparency = 1
     })
@@ -156,22 +154,19 @@ function Library:CreateWindow(title)
     ApplyTheme(Content, "BackgroundColor3", "Content")
     ApplyTheme(ContentStroke, "Color", "Outline")
 
-    -- [[ WINDOW CONTROLS - FIXED ORDER ]]
-    
-    -- Icon Assets
-    local IconMin   = "rbxassetid://10734896206" -- Minus
-    local IconMax   = "rbxassetid://10734965702" -- Square
-    local IconClose = "rbxassetid://10747384394" -- Cross
-
+    -- [[ BUTTON CREATOR (With Optical Size Fix) ]]
     local function CreateBtn(order, iconID, isClose, callback)
         local Btn = Create("TextButton", {
             Parent = ControlHolder, Text = "", Size = UDim2.new(0, 28, 0, 28), AutoButtonColor = false, 
-            BackgroundTransparency = 1, LayoutOrder = order -- INI KUNCINYA
+            BackgroundTransparency = 1, LayoutOrder = order
         })
         Create("UICorner", {Parent = Btn, CornerRadius = UDim.new(0, 6)})
         
+        -- FIX SIZE DISINI: Kalau Close Button, sizenya 16px. Kalau yg lain 14px.
+        local iconSize = isClose and 16 or 14 
+        
         local Icon = Create("ImageLabel", {
-            Parent = Btn, Image = iconID, Size = UDim2.new(0, 14, 0, 14),
+            Parent = Btn, Image = iconID, Size = UDim2.new(0, iconSize, 0, iconSize),
             Position = UDim2.fromScale(0.5, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1
         })
 
@@ -197,10 +192,14 @@ function Library:CreateWindow(title)
         Btn.MouseButton1Click:Connect(callback)
     end
 
-    -- 1. MINIMIZE (Order 1 - Paling Kiri)
+    local IconMin   = "rbxassetid://10734896206"
+    local IconMax   = "rbxassetid://10734965702"
+    local IconClose = "rbxassetid://10747384394"
+
+    -- 1. Minimize (Left)
     CreateBtn(1, IconMin, false, function() Main.Visible = false end)
 
-    -- 2. MAXIMIZE (Order 2 - Tengah)
+    -- 2. Maximize (Center)
     local SidebarOpen = true
     CreateBtn(2, IconMax, false, function()
         SidebarOpen = not SidebarOpen
@@ -213,10 +212,9 @@ function Library:CreateWindow(title)
         end
     end)
 
-    -- 3. CLOSE (Order 3 - Paling Kanan)
+    -- 3. Close (Right - Fixed Size)
     CreateBtn(3, IconClose, true, function() Gui:Destroy() end)
 
-    -- KEYBIND TOGGLE
     UserInputService.InputBegan:Connect(function(input, processed)
         if not processed and input.KeyCode == Library.ToggleKey then Main.Visible = not Main.Visible end
     end)
