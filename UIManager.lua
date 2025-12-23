@@ -166,16 +166,16 @@ function Library:CreateWindow(title_ignored)
     local function CreateElements(ParentFrame)
         local Elements = {}
 
-        -- >> GROUP (INI YANG GUA UBAH TOTAL: HEADER -> GARIS -> JARAK -> KONTEN)
+       -- [[ FUNGSI Elements:Group (VERSI FINAL - PADDING FIX) ]]
         function Elements:Group(text)
             local isOpened = true
             
-            -- [[ PENGATURAN JARAK (GAP) ]]
-            -- Ganti angka ini sesuka hati lu.
-            -- 10 = Rapi standar
-            -- 20 = Lega
-            -- 0  = Nempel garis
-            local GAP_SIZE = 35  
+            -- [[ ATUR JARAK DISINI ]]
+            -- Ganti angka 20 ini.
+            -- 0  = Nempel Garis
+            -- 20 = Jarak Sedang
+            -- 40 = Jauh Banget
+            local GAP_SIZE = 20 
             
             -- 1. CARD BACKGROUND
             local GroupCard = Create("Frame", {
@@ -219,25 +219,20 @@ function Library:CreateWindow(title_ignored)
             })
             ApplyTheme(Divider, "BackgroundColor3", "Outline")
             
-            -- 4. FRAME JARAK (GAP) - INI YANG BIKIN LEGA
-            local GapFrame = Create("Frame", {
-                Parent = GroupCard, Size = UDim2.new(1, 0, 0, GAP_SIZE), LayoutOrder = 2,
-                BackgroundTransparency = 1 -- Transparan
-            })
-            
-            -- 5. CONTAINER KONTEN (ISI MENU)
+            -- 4. CONTAINER KONTEN
             local Container = Create("Frame", {
-                Parent = GroupCard, Size = UDim2.new(1, 0, 0, 0), LayoutOrder = 3,
+                Parent = GroupCard, Size = UDim2.new(1, 0, 0, 0), LayoutOrder = 2,
                 BackgroundTransparency = 1, Visible = true 
             })
             local ContainerLayout = Create("UIListLayout", {
                 Parent = Container, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 5)
             })
             
-            -- Padding Container (Cuma buat Kiri, Kanan, Bawah)
+            -- [[ PADDING CONTAINER ]]
+            -- Disini kuncinya. Kita masukin GAP_SIZE ke PaddingTop.
             Create("UIPadding", {
                 Parent = Container, 
-                PaddingTop = UDim.new(0, 0), -- Gak perlu padding atas lagi, udah ada GapFrame
+                PaddingTop = UDim.new(0, GAP_SIZE), -- Jarak Atas ngambil dari settingan GAP_SIZE
                 PaddingBottom = UDim.new(0, 15),
                 PaddingLeft = UDim.new(0, 10), 
                 PaddingRight = UDim.new(0, 10)
@@ -247,10 +242,12 @@ function Library:CreateWindow(title_ignored)
                 local contentHeight = ContainerLayout.AbsoluteContentSize.Y
                 local headerHeight = 44
                 local dividerHeight = 1
-                local bottomPadding = 15 -- Sesuai paddingBottom di atas
+                local bottomPadding = 15
                 
-                -- Itungan Total Tinggi:
-                local fullHeight = headerHeight + dividerHeight + GAP_SIZE + contentHeight + bottomPadding
+                -- [[ MATEMATIKA TINGGI ]]
+                -- Kita harus nambahin GAP_SIZE ke total tinggi manual
+                -- Header + Garis + Konten + Jarak Atas (Gap) + Jarak Bawah
+                local fullHeight = headerHeight + dividerHeight + contentHeight + GAP_SIZE + bottomPadding
                 
                 local targetHeight = isOpened and fullHeight or headerHeight
                 
@@ -258,7 +255,6 @@ function Library:CreateWindow(title_ignored)
                 
                 if isOpened then
                     Container.Visible = true
-                    GapFrame.Visible = true
                     TweenService:Create(Divider, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
                     TweenService:Create(GroupCard, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                         Size = UDim2.new(1, 0, 0, targetHeight)
@@ -270,13 +266,16 @@ function Library:CreateWindow(title_ignored)
                     TweenService:Create(Divider, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
                     
                     task.delay(0.3, function()
-                        if not isOpened then 
-                            Container.Visible = false 
-                            GapFrame.Visible = false
-                        end
+                        if not isOpened then Container.Visible = false end
                     end)
                 end
             end
+            
+            ContainerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() if isOpened then UpdateSize() end end)
+            HeaderFrame.MouseButton1Click:Connect(function() isOpened = not isOpened; UpdateSize() end)
+
+            return CreateElements(Container)
+        end
             
             ContainerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() if isOpened then UpdateSize() end end)
             HeaderFrame.MouseButton1Click:Connect(function() isOpened = not isOpened; UpdateSize() end)
