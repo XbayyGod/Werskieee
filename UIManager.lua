@@ -1,5 +1,5 @@
 -- [[ Filename: UIManager.lua ]]
--- VERSION: FINAL FIX (PADDING & GAP SYSTEM)
+-- VERSION: PHYSICAL SPACER FIX (ANTI-STUCK)
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -57,16 +57,16 @@ end
 
 -- [[ 3. MAIN UI GENERATOR ]]
 function Library:CreateWindow(title_ignored)
-    if CoreGui:FindFirstChild("WerskieeeHubFinal") then CoreGui.WerskieeeHubFinal:Destroy() end
-    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubFinal") then 
-        game.Players.LocalPlayer.PlayerGui.WerskieeeHubFinal:Destroy() 
+    if CoreGui:FindFirstChild("WerskieeeHubFinalFix") then CoreGui.WerskieeeHubFinalFix:Destroy() end
+    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubFinalFix") then 
+        game.Players.LocalPlayer.PlayerGui.WerskieeeHubFinalFix:Destroy() 
     end
 
     local TargetParent = nil
     local s, r = pcall(function() return gethui() end)
     if s and r then TargetParent = r else TargetParent = game.Players.LocalPlayer:WaitForChild("PlayerGui") end
 
-    local Gui = Create("ScreenGui", {Name = "WerskieeeHubFinal", Parent = TargetParent, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, ResetOnSpawn = false})
+    local Gui = Create("ScreenGui", {Name = "WerskieeeHubFinalFix", Parent = TargetParent, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, ResetOnSpawn = false})
     
     local Main = Create("Frame", {
         Parent = Gui, Size = UDim2.fromOffset(600, 400), Position = UDim2.fromScale(0.5, 0.5),
@@ -177,15 +177,16 @@ function Library:CreateWindow(title_ignored)
     local function CreateElements(ParentFrame)
         local Elements = {}
 
-        -- >> GROUP (FIXED LOGIC)
+        -- >> GROUP (DENGAN SPACER FISIK)
         function Elements:Group(text)
             local isOpened = true
             
             -- [[ ATUR JARAK DISINI ]]
-            -- Ganti angka 20 ini. Makin gede makin jauh ke bawah.
-            local GAP_SIZE = 20 
+            -- Ini tinggi "Kotak Kosong" yang bakal nyundul tombol ke bawah.
+            -- Ubah angka 25 ini kalau kurang jauh.
+            local GAP_SIZE = 25 
             
-            -- 1. CARD BACKGROUND
+            -- 1. CARD
             local GroupCard = Create("Frame", {
                 Parent = ParentFrame, 
                 Size = UDim2.new(1, 0, 0, 44), 
@@ -227,7 +228,7 @@ function Library:CreateWindow(title_ignored)
             })
             ApplyTheme(Divider, "BackgroundColor3", "Outline")
             
-            -- 4. CONTAINER KONTEN
+            -- 4. CONTAINER
             local Container = Create("Frame", {
                 Parent = GroupCard, Size = UDim2.new(1, 0, 0, 0), LayoutOrder = 2,
                 BackgroundTransparency = 1, Visible = true 
@@ -236,23 +237,32 @@ function Library:CreateWindow(title_ignored)
                 Parent = Container, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 5)
             })
             
-            -- [[ PADDING CONTAINER ]]
+            -- [[ SPACER FISIK ]]
+            -- Ini kotak kosong yang memaksa konten turun.
+            local Spacer = Create("Frame", {
+                Parent = Container,
+                Size = UDim2.new(1, 0, 0, GAP_SIZE), -- Tinggi diambil dari variable GAP_SIZE
+                BackgroundTransparency = 1, -- Transparan
+                LayoutOrder = -999 -- Pastiin dia selalu urutan paling atas di dalem container
+            })
+
+            -- Padding Sisa (Bawah & Samping)
             Create("UIPadding", {
                 Parent = Container, 
-                PaddingTop = UDim.new(0, GAP_SIZE), -- Ikut GAP_SIZE
+                PaddingTop = UDim.new(0, 0), -- Udah diwakilin Spacer
                 PaddingBottom = UDim.new(0, 15),
                 PaddingLeft = UDim.new(0, 10), 
                 PaddingRight = UDim.new(0, 10)
             })
 
             local function UpdateSize()
+                -- Karena Spacer ada di dalam Container, AbsoluteContentSize otomatis menghitung tingginya!
                 local contentHeight = ContainerLayout.AbsoluteContentSize.Y
                 local headerHeight = 44
                 local dividerHeight = 1
-                local bottomPadding = 15
+                local paddingBottom = 15
                 
-                -- Matematika Total Tinggi
-                local fullHeight = headerHeight + dividerHeight + contentHeight + GAP_SIZE + bottomPadding
+                local fullHeight = headerHeight + dividerHeight + contentHeight + paddingBottom
                 
                 local targetHeight = isOpened and fullHeight or headerHeight
                 
