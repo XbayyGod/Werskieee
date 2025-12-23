@@ -167,7 +167,6 @@ function Library:CreateWindow(title_ignored)
         local Elements = {}
 
         -- >> GROUP (INI YANG GUA UBAH TOTAL: HEADER -> GARIS -> JARAK -> KONTEN)
-        -- [[ GANTI FUNGSI Elements:Group (VERSI JARAK JAUH) ]]
         function Elements:Group(text)
             local isOpened = true
             
@@ -222,11 +221,11 @@ function Library:CreateWindow(title_ignored)
                 Parent = Container, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 5)
             })
             
-            -- [[ BAGIAN INI YANG GUA UBAH BIAR MAKIN KE BAWAH ]]
+            -- [[ SETTING JARAK (PADDING) ]]
             Create("UIPadding", {
                 Parent = Container, 
-                PaddingTop = UDim.new(0, 30),    -- INI GUA GEDEIN JADI 30 (BIAR TURUN JAUH)
-                PaddingBottom = UDim.new(0, 15),
+                PaddingTop = UDim.new(0, 35),    -- << GUA GANTI JADI 35 BIAR MAKIN TURUN
+                PaddingBottom = UDim.new(0, 15), -- Jarak bawah tetep 15
                 PaddingLeft = UDim.new(0, 10), 
                 PaddingRight = UDim.new(0, 10)
             })
@@ -235,8 +234,11 @@ function Library:CreateWindow(title_ignored)
                 local contentHeight = ContainerLayout.AbsoluteContentSize.Y
                 local headerHeight = 44
                 
-                -- Itungan padding: 30 (atas) + 15 (bawah) = 45 total padding
-                local fullHeight = headerHeight + contentHeight + 45 + 1 
+                -- Itungan Total Tinggi:
+                -- Header (44) + Divider (1) + Padding Atas (35) + Padding Bawah (15) = 95
+                local paddingTotal = 35 + 15
+                local fullHeight = headerHeight + 1 + contentHeight + paddingTotal
+                
                 local targetHeight = isOpened and fullHeight or headerHeight
                 
                 TweenService:Create(Arrow, TweenInfo.new(0.3), {Rotation = isOpened and 180 or 0}):Play()
