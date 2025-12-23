@@ -1,5 +1,5 @@
 -- [[ Filename: UIManager.lua ]]
--- VERSION: V7 (PERFECT RESIZING GROUPS - NO CUT OFF)
+-- VERSION: V7.1 (CLEAN TRANSPARENT: No Content Background, No Group Container Background)
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -13,26 +13,26 @@ Library.ToggleKey = Enum.KeyCode.RightControl
 -- [[ 1. THEME PRESETS ]]
 Library.Themes = {
     Midnight = {
-        Main        = Color3.fromRGB(20, 20, 20),
+        Main        = Color3.fromRGB(20, 20, 20), -- Background Utama
         Header      = Color3.fromRGB(25, 25, 25),
         Sidebar     = Color3.fromRGB(25, 25, 25),
-        Content     = Color3.fromRGB(30, 30, 30),
-        SectionBg   = Color3.fromRGB(38, 38, 38), -- Warna Background Group
+        SectionBg   = Color3.fromRGB(35, 35, 35), -- Header Group
+        ElementBg   = Color3.fromRGB(28, 28, 28), -- Background Item (Button/Toggle)
         Text        = Color3.fromRGB(255, 255, 255),
-        SubText     = Color3.fromRGB(170, 170, 170),
+        SubText     = Color3.fromRGB(160, 160, 160),
         Accent      = Color3.fromRGB(115, 100, 255),
-        Outline     = Color3.fromRGB(60, 60, 60),
-        Hover       = Color3.fromRGB(50, 50, 50),
-        Dropdown    = Color3.fromRGB(45, 45, 45),
+        Outline     = Color3.fromRGB(50, 50, 50),
+        Hover       = Color3.fromRGB(45, 45, 45),
+        Dropdown    = Color3.fromRGB(40, 40, 40),
         ControlIcon = Color3.fromRGB(200, 200, 200),
-        ControlHover= Color3.fromRGB(70, 70, 70)
+        ControlHover= Color3.fromRGB(60, 60, 60)
     },
     Ocean = {
         Main        = Color3.fromRGB(15, 25, 35),
         Header      = Color3.fromRGB(20, 30, 40),
         Sidebar     = Color3.fromRGB(20, 30, 40),
-        Content     = Color3.fromRGB(25, 35, 45),
-        SectionBg   = Color3.fromRGB(35, 50, 60),
+        SectionBg   = Color3.fromRGB(30, 45, 55),
+        ElementBg   = Color3.fromRGB(20, 35, 45),
         Text        = Color3.fromRGB(230, 255, 255),
         SubText     = Color3.fromRGB(140, 170, 170),
         Accent      = Color3.fromRGB(0, 190, 255),
@@ -46,8 +46,8 @@ Library.Themes = {
         Main        = Color3.fromRGB(25, 18, 18),
         Header      = Color3.fromRGB(30, 20, 20),
         Sidebar     = Color3.fromRGB(30, 20, 20),
-        Content     = Color3.fromRGB(35, 22, 22),
         SectionBg   = Color3.fromRGB(45, 30, 30),
+        ElementBg   = Color3.fromRGB(35, 22, 22),
         Text        = Color3.fromRGB(255, 230, 230),
         SubText     = Color3.fromRGB(180, 140, 140),
         Accent      = Color3.fromRGB(220, 60, 60),
@@ -87,17 +87,18 @@ end
 
 -- [[ 3. MAIN UI GENERATOR ]]
 function Library:CreateWindow(title_ignored)
-    if CoreGui:FindFirstChild("WerskieeeHubV7") then CoreGui.WerskieeeHubV7:Destroy() end
-    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubV7") then 
-        game.Players.LocalPlayer.PlayerGui.WerskieeeHubV7:Destroy() 
+    if CoreGui:FindFirstChild("WerskieeeHubV7_1") then CoreGui.WerskieeeHubV7_1:Destroy() end
+    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubV7_1") then 
+        game.Players.LocalPlayer.PlayerGui.WerskieeeHubV7_1:Destroy() 
     end
 
     local TargetParent = nil
     local s, r = pcall(function() return gethui() end)
     if s and r then TargetParent = r else TargetParent = game.Players.LocalPlayer:WaitForChild("PlayerGui") end
 
-    local Gui = Create("ScreenGui", {Name = "WerskieeeHubV7", Parent = TargetParent, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, ResetOnSpawn = false})
+    local Gui = Create("ScreenGui", {Name = "WerskieeeHubV7_1", Parent = TargetParent, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, ResetOnSpawn = false})
     
+    -- MAIN FRAME
     local Main = Create("Frame", {
         Parent = Gui, Size = UDim2.fromOffset(600, 400), Position = UDim2.fromScale(0.5, 0.5),
         AnchorPoint = Vector2.new(0.5, 0.5), BorderSizePixel = 0, ClipsDescendants = true
@@ -112,6 +113,7 @@ function Library:CreateWindow(title_ignored)
         Parent = Main, Size = UDim2.new(1, 0, 0, 40), Position = UDim2.new(0, 0, 0, 0), BorderSizePixel = 0, BackgroundTransparency = 1
     })
     
+    -- Drag Logic
     local dragging, dragStart, startPos
     Header.InputBegan:Connect(function(i)
         if i.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -145,7 +147,7 @@ function Library:CreateWindow(title_ignored)
     Create("UIListLayout", {Parent = ControlHolder, FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Right, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder})
     Create("UIPadding", {Parent = ControlHolder, PaddingRight = UDim.new(0, 10), PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6)})
 
-    -- Sidebar & Content
+    -- SIDEBAR
     local Sidebar = Create("Frame", {
         Parent = Main, Size = UDim2.new(0, 160, 1, -40), Position = UDim2.new(0, 0, 0, 40), BorderSizePixel = 0, BackgroundTransparency = 1
     })
@@ -156,14 +158,14 @@ function Library:CreateWindow(title_ignored)
     Create("UIListLayout", {Parent = TabContainer, Padding = UDim.new(0, 5)})
     Create("UIPadding", {Parent = TabContainer, PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10), PaddingTop = UDim.new(0, 5)})
 
+    -- CONTENT AREA (TRANSPARENT BACKGROUND)
     local Content = Create("Frame", {
         Parent = Main, Size = UDim2.new(1, -170, 1, -50), Position = UDim2.new(0, 165, 0, 45), 
-        BackgroundTransparency = 0, BorderSizePixel = 0, ClipsDescendants = true
+        BackgroundTransparency = 1, -- TRANSPARAN (Sesuai request)
+        BorderSizePixel = 0, ClipsDescendants = true
     })
-    -- Content background diaktifkan tapi transparan/warna content agar menyatu
-    ApplyTheme(Content, "BackgroundColor3", "Content")
 
-    -- BUTTONS CONTROLS
+    -- BUTTONS CREATOR
     local function CreateBtn(order, iconID, isClose, callback)
         local Btn = Create("TextButton", {
             Parent = ControlHolder, Text = "", Size = UDim2.new(0, 28, 0, 28), AutoButtonColor = false, 
@@ -213,27 +215,26 @@ function Library:CreateWindow(title_ignored)
         function Elements:Group(text)
             local isOpened = true
             
-            -- Frame Utama untuk Group
+            -- Container utama Group (TRANSPARAN)
             local SectionContainer = Create("Frame", {
                 Parent = ParentFrame, 
-                Size = UDim2.new(1, 0, 0, 36), -- Default tinggi header
-                BackgroundTransparency = 1,
+                Size = UDim2.new(1, 0, 0, 36),
+                BackgroundTransparency = 1, -- Tidak ada background kotak
                 ClipsDescendants = true
             })
 
-            -- Header Button (Warna berbeda)
+            -- Header Button
             local HeaderBtn = Create("TextButton", {
                 Parent = SectionContainer, Text = "", Size = UDim2.new(1, 0, 0, 36),
                 AutoButtonColor = false, ZIndex = 2
             })
             Create("UICorner", {Parent = HeaderBtn, CornerRadius = UDim.new(0, 8)})
-            ApplyTheme(HeaderBtn, "BackgroundColor3", "SectionBg")
+            ApplyTheme(HeaderBtn, "BackgroundColor3", "SectionBg") -- Hanya header yang punya warna
 
             local Label = Create("TextLabel", {
                 Parent = HeaderBtn, Text = text, Size = UDim2.new(1, -35, 1, 0), Position = UDim2.new(0, 12, 0, 0),
                 TextXAlignment = Enum.TextXAlignment.Left, Font = Enum.Font.GothamBold, 
-                TextSize = 15, -- UKURAN TEKS GROUP (Pas)
-                BackgroundTransparency = 1
+                TextSize = 15, BackgroundTransparency = 1
             })
             ApplyTheme(Label, "TextColor3", "Accent")
 
@@ -243,40 +244,38 @@ function Library:CreateWindow(title_ignored)
             })
             ApplyTheme(Arrow, "ImageColor3", "SubText")
 
-            -- Wadah Item (Di bawah header)
+            -- Wadah Item (TRANSPARAN)
             local Container = Create("Frame", {
                 Parent = SectionContainer, Size = UDim2.new(1, 0, 0, 0), Position = UDim2.new(0, 0, 0, 36),
-                BackgroundTransparency = 1
+                BackgroundTransparency = 1 -- Tidak ada background di area item
             })
             local ContainerLayout = Create("UIListLayout", {
                 Parent = Container, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 8)
             })
             Create("UIPadding", {Parent = Container, PaddingTop = UDim.new(0, 10), PaddingBottom = UDim.new(0, 5), PaddingLeft = UDim.new(0, 5), PaddingRight = UDim.new(0, 5)})
 
-            -- LOGIKA RESIZING (PERBAIKAN UTAMA)
             local function UpdateSize()
                 local contentHeight = ContainerLayout.AbsoluteContentSize.Y
-                -- Tambahkan buffer padding biar ga mepet/kepotong
                 local targetHeight = isOpened and (36 + contentHeight + 20) or 36
-                
                 TweenService:Create(SectionContainer, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                     Size = UDim2.new(1, 0, 0, targetHeight)
                 }):Play()
                 TweenService:Create(Arrow, TweenInfo.new(0.3), {Rotation = isOpened and 180 or 0}):Play()
             end
             
-            -- Update saat ada elemen ditambah atau diubah
-            ContainerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-                if isOpened then UpdateSize() end
-            end)
+            ContainerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() if isOpened then UpdateSize() end end)
+            HeaderBtn.MouseButton1Click:Connect(function() isOpened = not isOpened; UpdateSize() end)
 
-            HeaderBtn.MouseButton1Click:Connect(function()
-                isOpened = not isOpened
-                UpdateSize()
-            end)
-
-            -- Recursion: Semua elemen di bawah ini masuk ke Container
             return CreateElements(Container)
+        end
+        
+        function Elements:Section(text)
+             local F = Create("Frame", {Parent = ParentFrame, Size = UDim2.new(1, 0, 0, 25), BackgroundTransparency = 1})
+            local L = Create("TextLabel", {
+                Parent = F, Text = text, Size = UDim2.new(1, 0, 1, 0), Font = Enum.Font.GothamBold,
+                TextSize = 12, TextXAlignment = Enum.TextXAlignment.Left, BackgroundTransparency = 1
+            })
+            ApplyTheme(L, "TextColor3", "SubText")
         end
 
         function Elements:Button(text, callback)
@@ -285,7 +284,7 @@ function Library:CreateWindow(title_ignored)
             })
             Create("UICorner", {Parent = B, CornerRadius = UDim.new(0, 6)})
             Create("UIStroke", {Parent = B, Thickness = 1})
-            ApplyTheme(B, "BackgroundColor3", "Main") -- Warna tombol mengikuti tema Main (gelap)
+            ApplyTheme(B, "BackgroundColor3", "ElementBg") -- Warna Item Berbeda dari Main
             ApplyTheme(B.UIStroke, "Color", "Outline")
             local L = Create("TextLabel", {
                 Parent = B, Text = text, Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1,
@@ -299,7 +298,7 @@ function Library:CreateWindow(title_ignored)
                 if callback then callback() end
             end)
             B.MouseEnter:Connect(function() ApplyTheme(B, "BackgroundColor3", "Hover") end)
-            B.MouseLeave:Connect(function() ApplyTheme(B, "BackgroundColor3", "Main") end)
+            B.MouseLeave:Connect(function() ApplyTheme(B, "BackgroundColor3", "ElementBg") end)
         end
 
         function Elements:Toggle(text, default, callback)
@@ -309,7 +308,7 @@ function Library:CreateWindow(title_ignored)
             })
             Create("UICorner", {Parent = B, CornerRadius = UDim.new(0, 6)})
             Create("UIStroke", {Parent = B, Thickness = 1})
-            ApplyTheme(B, "BackgroundColor3", "Main")
+            ApplyTheme(B, "BackgroundColor3", "ElementBg")
             ApplyTheme(B.UIStroke, "Color", "Outline")
             local L = Create("TextLabel", {
                 Parent = B, Text = text, Size = UDim2.new(1, -55, 1, 0), Position = UDim2.new(0, 10, 0, 0),
@@ -340,7 +339,7 @@ function Library:CreateWindow(title_ignored)
             local C = Create("Frame", {Parent = F, Size = UDim2.new(1, 0, 1, 0)})
             Create("UICorner", {Parent = C, CornerRadius = UDim.new(0, 6)})
             Create("UIStroke", {Parent = C, Thickness = 1})
-            ApplyTheme(C, "BackgroundColor3", "Main")
+            ApplyTheme(C, "BackgroundColor3", "ElementBg")
             ApplyTheme(C.UIStroke, "Color", "Outline")
             local L = Create("TextLabel", {
                 Parent = C, Text = text, Size = UDim2.new(1, 0, 0, 20), Position = UDim2.new(0, 10, 0, 2),
@@ -384,7 +383,7 @@ function Library:CreateWindow(title_ignored)
             })
             Create("UICorner", {Parent = MainBtn, CornerRadius = UDim.new(0, 6)})
             Create("UIStroke", {Parent = MainBtn, Thickness = 1})
-            ApplyTheme(MainBtn, "BackgroundColor3", "Main")
+            ApplyTheme(MainBtn, "BackgroundColor3", "ElementBg")
             ApplyTheme(MainBtn.UIStroke, "Color", "Outline")
             local Label = Create("TextLabel", {
                 Parent = MainBtn, Text = text .. "...", Size = UDim2.new(1, -40, 1, 0), Position = UDim2.new(0, 10, 0, 0),
@@ -452,11 +451,9 @@ function Library:CreateWindow(title_ignored)
             Parent = Content, Size = UDim2.fromScale(1, 1), Visible = false, BackgroundTransparency = 1,
             ScrollBarThickness = 2, CanvasSize = UDim2.new(0,0,0,0), ScrollBarImageColor3 = Color3.fromRGB(60,60,60)
         })
-        -- PENTING: Layout Page ini yang mengatur jarak antar Group
-        local Layout = Create("UIListLayout", {Parent = Page, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 10)})
-        Create("UIPadding", {Parent = Page, PaddingTop = UDim.new(0, 15), PaddingRight = UDim.new(0, 10), PaddingLeft = UDim.new(0, 10), PaddingBottom = UDim.new(0, 20)})
+        local Layout = Create("UIListLayout", {Parent = Page, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 12)})
+        Create("UIPadding", {Parent = Page, PaddingTop = UDim.new(0, 15), PaddingRight = UDim.new(0, 15), PaddingLeft = UDim.new(0, 15), PaddingBottom = UDim.new(0, 20)})
 
-        -- PENTING: Kalkulasi tinggi halaman harus akurat mengikuti perubahan ukuran Group
         Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
             Page.CanvasSize = UDim2.new(0, 0, 0, Layout.AbsoluteContentSize.Y + 40)
         end)
