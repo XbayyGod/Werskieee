@@ -178,15 +178,16 @@ function Library:CreateWindow(title_ignored)
         local Elements = {}
 
         -- >> GROUP (INI YANG GUA UBAH TOTAL: HEADER -> GARIS -> JARAK -> KONTEN)
+-- [[ GANTI FUNGSI Elements:Group DENGAN YANG INI ]]
         function Elements:Group(text)
             local isOpened = true
             
-            -- 1. CARD BACKGROUND (Wadah Utama)
+            -- 1. CARD BACKGROUND
             local GroupCard = Create("Frame", {
                 Parent = ParentFrame, 
-                Size = UDim2.new(1, 0, 0, 40), 
+                Size = UDim2.new(1, 0, 0, 44), -- Tinggi Header
                 BackgroundTransparency = 0,
-                ClipsDescendants = true,
+                ClipsDescendants = true, -- Wajib True
                 BorderSizePixel = 0
             })
             Create("UICorner", {Parent = GroupCard, CornerRadius = UDim.new(0, 8)})
@@ -196,67 +197,80 @@ function Library:CreateWindow(title_ignored)
                 Parent = GroupCard, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 0)
             })
 
-            -- 2. HEADER GROUP (Judul + Panah)
+            -- 2. HEADER
             local HeaderFrame = Create("TextButton", {
-                Parent = GroupCard, Text = "", Size = UDim2.new(1, 0, 0, 40), -- Tinggi Header
+                Parent = GroupCard, Text = "", Size = UDim2.new(1, 0, 0, 44),
                 AutoButtonColor = false, LayoutOrder = 0, BorderSizePixel = 0,
                 BackgroundTransparency = 1
             })
             
             local Label = Create("TextLabel", {
-                Parent = HeaderFrame, Text = text, Size = UDim2.new(1, -35, 1, 0), Position = UDim2.new(0, 12, 0, 0),
+                Parent = HeaderFrame, Text = text, Size = UDim2.new(1, -35, 1, 0), Position = UDim2.new(0, 15, 0, 0),
                 TextXAlignment = Enum.TextXAlignment.Left, Font = Enum.Font.GothamBold, 
                 TextSize = 14, BackgroundTransparency = 1
             })
             ApplyTheme(Label, "TextColor3", "Accent")
 
             local Arrow = Create("ImageLabel", {
-                Parent = HeaderFrame, Image = "rbxassetid://6034818372", Size = UDim2.new(0, 18, 0, 18),
-                Position = UDim2.new(1, -28, 0.5, -9), BackgroundTransparency = 1, Rotation = 180
+                Parent = HeaderFrame, Image = "rbxassetid://6034818372", Size = UDim2.new(0, 20, 0, 20),
+                Position = UDim2.new(1, -30, 0.5, -10), BackgroundTransparency = 1, Rotation = 180
             })
             ApplyTheme(Arrow, "ImageColor3", "SubText")
 
-            -- 3. DIVIDER (Garis Pemisah)
+            -- 3. DIVIDER (Garis)
             local Divider = Create("Frame", {
-                Parent = GroupCard, Size = UDim2.new(1, 0, 0, 1), LayoutOrder = 1, BorderSizePixel = 0
+                Parent = GroupCard, Size = UDim2.new(1, 0, 0, 1), LayoutOrder = 1, BorderSizePixel = 0,
+                BackgroundTransparency = 0 -- Default muncul karena default isOpened = true
             })
             ApplyTheme(Divider, "BackgroundColor3", "Outline")
             
-            -- 4. CONTAINER KONTEN (Isi Menu)
+            -- 4. CONTAINER KONTEN
             local Container = Create("Frame", {
                 Parent = GroupCard, Size = UDim2.new(1, 0, 0, 0), LayoutOrder = 2,
-                BackgroundTransparency = 1
+                BackgroundTransparency = 1, Visible = true -- Default visible
             })
             local ContainerLayout = Create("UIListLayout", {
                 Parent = Container, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4)
             })
             
-            -- PADDING (Disini kuncinya biar ada jarak dari garis ke konten)
             Create("UIPadding", {
                 Parent = Container, 
-                PaddingTop = UDim.new(0, 15),    -- Jarak Atas (Dari Garis ke Menu Pertama)
-                PaddingBottom = UDim.new(0, 15), -- Jarak Bawah
+                PaddingTop = UDim.new(0, 15),
+                PaddingBottom = UDim.new(0, 15),
                 PaddingLeft = UDim.new(0, 10), 
                 PaddingRight = UDim.new(0, 10)
             })
 
             local function UpdateSize()
                 local contentHeight = ContainerLayout.AbsoluteContentSize.Y
-                local headerHeight = 40
-                local dividerHeight = 1
-                local paddingHeight = 30 -- (15 Top + 15 Bottom)
-                
-                -- Hitung total tinggi kalau dibuka
-                local fullHeight = headerHeight + dividerHeight + contentHeight + paddingHeight
+                local headerHeight = 44
+                local fullHeight = headerHeight + contentHeight + 30 + 1 -- 30 padding + 1 divider
                 local targetHeight = isOpened and fullHeight or headerHeight
                 
-                TweenService:Create(GroupCard, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                    Size = UDim2.new(1, 0, 0, targetHeight)
-                }):Play()
+                -- Animasi Panah
                 TweenService:Create(Arrow, TweenInfo.new(0.3), {Rotation = isOpened and 180 or 0}):Play()
                 
-                -- Sembunyikan garis kalau ditutup
-                TweenService:Create(Divider, TweenInfo.new(0.3), {BackgroundTransparency = isOpened and 0 or 1}):Play()
+                if isOpened then
+                    -- Kalau BUKA: Munculin dulu kontennya, baru animasi size biar mulus
+                    Container.Visible = true
+                    TweenService:Create(Divider, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
+                    TweenService:Create(GroupCard, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                        Size = UDim2.new(1, 0, 0, targetHeight)
+                    }):Play()
+                else
+                    -- Kalau TUTUP: Animasi size dulu, pas udah kelar baru umpetin (biar ga glitch visual)
+                    TweenService:Create(GroupCard, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                        Size = UDim2.new(1, 0, 0, targetHeight)
+                    }):Play()
+                    TweenService:Create(Divider, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
+                    
+                    -- Wait simpel pake delay task biar ga freeze thread
+                    task.delay(0.3, function()
+                        if not isOpened then -- Cek lagi takutnya di spam klik
+                            Container.Visible = false
+                        end
+                    end)
+                end
             end
             
             ContainerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() if isOpened then UpdateSize() end end)
