@@ -228,7 +228,7 @@ function Library:CreateWindow(title_ignored)
                 -- Kalau mau RAPET BANGET: ubah jadi 5
                 -- Kalau mau AGAK JAUH: ubah jadi 12 atau 15
                 -- Kalau mau LEGA: ubah jadi 20+
-                PaddingTop = UDim.new(0, 12), 
+                PaddingTop = UDim.new(0, 20), 
                 
                 PaddingBottom = UDim.new(0, 15),
                 PaddingLeft = UDim.new(0, 10), 
