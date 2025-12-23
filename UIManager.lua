@@ -1,5 +1,5 @@
 -- [[ Filename: UIManager.lua ]]
--- VERSION: V3 (Window Controls: Min, Max, Close added)
+-- VERSION: V4 (Professional Layout: Header, Sidebar, Content + Modern Icons)
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -8,48 +8,51 @@ local CoreGui = game:GetService("CoreGui")
 local Library = {}
 Library.RegisteredElements = {}
 Library.ThemeCallbacks = {}
-Library.ToggleKey = Enum.KeyCode.RightControl -- Tombol buat munculin UI lagi kalau di-minimize
+Library.ToggleKey = Enum.KeyCode.RightControl
 
 -- [[ 1. THEME PRESETS ]]
 Library.Themes = {
     Midnight = {
-        Main    = Color3.fromRGB(20, 20, 20),
-        Sidebar = Color3.fromRGB(25, 25, 25),
-        Content = Color3.fromRGB(30, 30, 30),
-        Text    = Color3.fromRGB(255, 255, 255),
-        SubText = Color3.fromRGB(170, 170, 170),
-        Accent  = Color3.fromRGB(115, 100, 255),
-        Outline = Color3.fromRGB(50, 50, 50),
-        Hover   = Color3.fromRGB(45, 45, 45),
-        Dropdown= Color3.fromRGB(35, 35, 35),
-        Control = Color3.fromRGB(60, 60, 60), -- Warna tombol close/min/max
-        ControlHover = Color3.fromRGB(80, 80, 80)
+        Main        = Color3.fromRGB(20, 20, 20), -- Warna dasar frame utama
+        Header      = Color3.fromRGB(25, 25, 25), -- Warna header atas
+        Sidebar     = Color3.fromRGB(25, 25, 25),
+        Content     = Color3.fromRGB(30, 30, 30), -- Warna area konten kanan
+        Text        = Color3.fromRGB(255, 255, 255),
+        SubText     = Color3.fromRGB(170, 170, 170),
+        Accent      = Color3.fromRGB(115, 100, 255),
+        Outline     = Color3.fromRGB(50, 50, 50),
+        Hover       = Color3.fromRGB(45, 45, 45),
+        Dropdown    = Color3.fromRGB(35, 35, 35),
+        ControlIcon = Color3.fromRGB(200, 200, 200), -- Warna ikon control (min/max)
+        ControlHover= Color3.fromRGB(60, 60, 60)
     },
     Ocean = {
-        Main    = Color3.fromRGB(15, 25, 35),
-        Sidebar = Color3.fromRGB(20, 30, 40),
-        Content = Color3.fromRGB(25, 35, 45),
-        Text    = Color3.fromRGB(230, 255, 255),
-        SubText = Color3.fromRGB(140, 170, 170),
-        Accent  = Color3.fromRGB(0, 190, 255),
-        Outline = Color3.fromRGB(40, 60, 80),
-        Hover   = Color3.fromRGB(35, 50, 60),
-        Dropdown= Color3.fromRGB(30, 40, 50),
-        Control = Color3.fromRGB(40, 60, 80),
-        ControlHover = Color3.fromRGB(50, 70, 90)
+        Main        = Color3.fromRGB(15, 25, 35),
+        Header      = Color3.fromRGB(20, 30, 40),
+        Sidebar     = Color3.fromRGB(20, 30, 40),
+        Content     = Color3.fromRGB(25, 35, 45),
+        Text        = Color3.fromRGB(230, 255, 255),
+        SubText     = Color3.fromRGB(140, 170, 170),
+        Accent      = Color3.fromRGB(0, 190, 255),
+        Outline     = Color3.fromRGB(40, 60, 80),
+        Hover       = Color3.fromRGB(35, 50, 60),
+        Dropdown    = Color3.fromRGB(30, 40, 50),
+        ControlIcon = Color3.fromRGB(180, 220, 255),
+        ControlHover= Color3.fromRGB(50, 70, 90)
     },
     Blood = {
-        Main    = Color3.fromRGB(25, 18, 18),
-        Sidebar = Color3.fromRGB(30, 20, 20),
-        Content = Color3.fromRGB(35, 22, 22),
-        Text    = Color3.fromRGB(255, 230, 230),
-        SubText = Color3.fromRGB(180, 140, 140),
-        Accent  = Color3.fromRGB(220, 60, 60),
-        Outline = Color3.fromRGB(80, 40, 40),
-        Hover   = Color3.fromRGB(50, 25, 25),
-        Dropdown= Color3.fromRGB(40, 25, 25),
-        Control = Color3.fromRGB(80, 40, 40),
-        ControlHover = Color3.fromRGB(100, 50, 50)
+        Main        = Color3.fromRGB(25, 18, 18),
+        Header      = Color3.fromRGB(30, 20, 20),
+        Sidebar     = Color3.fromRGB(30, 20, 20),
+        Content     = Color3.fromRGB(35, 22, 22),
+        Text        = Color3.fromRGB(255, 230, 230),
+        SubText     = Color3.fromRGB(180, 140, 140),
+        Accent      = Color3.fromRGB(220, 60, 60),
+        Outline     = Color3.fromRGB(80, 40, 40),
+        Hover       = Color3.fromRGB(50, 25, 25),
+        Dropdown    = Color3.fromRGB(40, 25, 25),
+        ControlIcon = Color3.fromRGB(255, 200, 200),
+        ControlHover= Color3.fromRGB(100, 50, 50)
     }
 }
 Library.CurrentTheme = Library.Themes.Midnight
@@ -69,13 +72,9 @@ end
 function Library:SetTheme(name)
     if not Library.Themes[name] then return end
     Library.CurrentTheme = Library.Themes[name]
-
     for _, v in ipairs(Library.RegisteredElements) do
-        if v.Obj then
-            TweenService:Create(v.Obj, TweenInfo.new(0.3), {[v.Prop] = Library.CurrentTheme[v.Key]}):Play()
-        end
+        if v.Obj then TweenService:Create(v.Obj, TweenInfo.new(0.3), {[v.Prop] = Library.CurrentTheme[v.Key]}):Play() end
     end
-    
     for _, cb in ipairs(Library.ThemeCallbacks) do task.spawn(cb) end
 end
 
@@ -97,12 +96,13 @@ local function MakeDraggable(trigger, frame)
     end)
 end
 
--- [[ 3. MAIN UI ]]
+-- [[ 3. MAIN UI CREATION ]]
 function Library:CreateWindow(title)
-    if CoreGui:FindFirstChild("WerskieeeHubV3") then CoreGui.WerskieeeHubV3:Destroy() end
+    if CoreGui:FindFirstChild("WerskieeeHubV4") then CoreGui.WerskieeeHubV4:Destroy() end
 
-    local Gui = Create("ScreenGui", {Name = "WerskieeeHubV3", Parent = CoreGui, ZIndexBehavior = Enum.ZIndexBehavior.Sibling})
+    local Gui = Create("ScreenGui", {Name = "WerskieeeHubV4", Parent = CoreGui, ZIndexBehavior = Enum.ZIndexBehavior.Sibling})
     
+    -- ** MAIN CONTAINER **
     local Main = Create("Frame", {
         Parent = Gui, Size = UDim2.fromOffset(600, 400), Position = UDim2.fromScale(0.5, 0.5),
         AnchorPoint = Vector2.new(0.5, 0.5), BorderSizePixel = 0, ClipsDescendants = true
@@ -112,111 +112,103 @@ function Library:CreateWindow(title)
     ApplyTheme(Main, "BackgroundColor3", "Main")
     ApplyTheme(Main.UIStroke, "Color", "Outline")
 
-    -- Sidebar
-    local Sidebar = Create("Frame", {Parent = Main, Size = UDim2.new(0, 160, 1, 0), BorderSizePixel = 0})
-    Create("UICorner", {Parent = Sidebar, CornerRadius = UDim.new(0, 10)})
-    local Fix = Create("Frame", {Parent = Sidebar, Size = UDim2.new(0, 10, 1, 0), Position = UDim2.new(1, -10, 0, 0), BorderSizePixel = 0})
-    ApplyTheme(Sidebar, "BackgroundColor3", "Sidebar")
-    ApplyTheme(Fix, "BackgroundColor3", "Sidebar")
-    MakeDraggable(Sidebar, Main)
+    -- ** HEADER SECTION (Draggable Area) **
+    local Header = Create("Frame", {
+        Parent = Main, Size = UDim2.new(1, 0, 0, 40), Position = UDim2.new(0, 0, 0, 0), BorderSizePixel = 0
+    })
+    Create("UICorner", {Parent = Header, CornerRadius = UDim.new(0, 10)})
+    -- Fix corner bawah header biar lurus
+    local HeaderFix = Create("Frame", {Parent = Header, Size = UDim2.new(1, 0, 0, 10), Position = UDim2.new(0, 0, 1, -10), BorderSizePixel = 0})
+    ApplyTheme(Header, "BackgroundColor3", "Header")
+    ApplyTheme(HeaderFix, "BackgroundColor3", "Header")
+    
+    MakeDraggable(Header, Main) -- Header jadi area drag
 
-    -- Title
+    -- Title di Header
     local TitleLbl = Create("TextLabel", {
-        Parent = Sidebar, Text = title, Size = UDim2.new(1, -20, 0, 50), Position = UDim2.new(0, 15, 0, 10),
-        Font = Enum.Font.GothamBold, TextSize = 16, TextXAlignment = Enum.TextXAlignment.Left, BackgroundTransparency = 1, TextWrapped = true
+        Parent = Header, Text = title, Size = UDim2.new(1, -120, 1, 0), Position = UDim2.new(0, 15, 0, 0),
+        Font = Enum.Font.GothamBold, TextSize = 16, TextXAlignment = Enum.TextXAlignment.Left, BackgroundTransparency = 1
     })
     ApplyTheme(TitleLbl, "TextColor3", "Accent")
 
-    -- [[ WINDOW CONTROLS (Top Right) ]]
+    -- ** WINDOW CONTROLS (Professional Icons) **
     local ControlHolder = Create("Frame", {
-        Parent = Main, Size = UDim2.new(0, 90, 0, 30), Position = UDim2.new(1, -95, 0, 10), BackgroundTransparency = 1
+        Parent = Header, Size = UDim2.new(0, 100, 1, 0), Position = UDim2.new(1, -100, 0, 0), BackgroundTransparency = 1
     })
-    local ControlLayout = Create("UIListLayout", {Parent = ControlHolder, FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 5), SortOrder = Enum.SortOrder.LayoutOrder})
+    local ControlLayout = Create("UIListLayout", {Parent = ControlHolder, FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Right, Padding = UDim.new(0, 5), SortOrder = Enum.SortOrder.LayoutOrder})
+    Create("UIPadding", {Parent = ControlHolder, PaddingRight = UDim.new(0, 10), PaddingTop = UDim.new(0, 5), PaddingBottom = UDim.new(0, 5)})
 
-    -- Function Helper buat Tombol Control
-    local function CreateControlBtn(iconText, callback, isClose)
+    local function CreateIconBtn(iconId, callback, isClose)
         local Btn = Create("TextButton", {
-            Parent = ControlHolder, Text = iconText, Size = UDim2.new(0, 25, 0, 25), AutoButtonColor = false,
-            Font = Enum.Font.GothamBold, TextSize = 14
+            Parent = ControlHolder, Text = "", Size = UDim2.new(0, 30, 0, 30), AutoButtonColor = false, BackgroundTransparency = 1
         })
         Create("UICorner", {Parent = Btn, CornerRadius = UDim.new(0, 6)})
         
-        -- Warna default
-        if isClose then
-            Btn.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
-            Btn.TextColor3 = Color3.new(1,1,1)
-        else
-            ApplyTheme(Btn, "BackgroundColor3", "Control")
-            ApplyTheme(Btn, "TextColor3", "SubText")
-        end
+        local Icon = Create("ImageLabel", {
+            Parent = Btn, Image = iconId, Size = UDim2.new(0, 16, 0, 16),
+            Position = UDim2.fromScale(0.5, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1
+        })
 
-        Btn.MouseEnter:Connect(function()
-            if isClose then
-                TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255, 50, 50)}):Play()
-            else
+        if isClose then
+            Icon.ImageColor3 = Color3.fromRGB(200, 200, 200)
+            Btn.MouseEnter:Connect(function()
+                TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(232, 17, 35)}):Play() -- Merah Windows
+                Icon.ImageColor3 = Color3.new(1,1,1)
+            end)
+            Btn.MouseLeave:Connect(function()
+                TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
+                Icon.ImageColor3 = Color3.fromRGB(200, 200, 200)
+            end)
+        else
+            ApplyTheme(Icon, "ImageColor3", "ControlIcon")
+            Btn.MouseEnter:Connect(function()
                 TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundColor3 = Library.CurrentTheme.ControlHover}):Play()
-                Btn.TextColor3 = Color3.new(1,1,1)
-            end
-        end)
-        Btn.MouseLeave:Connect(function()
-            if isClose then
-                TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(200, 60, 60)}):Play()
-            else
-                TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundColor3 = Library.CurrentTheme.Control}):Play()
-                ApplyTheme(Btn, "TextColor3", "SubText")
-            end
-        end)
+            end)
+            Btn.MouseLeave:Connect(function()
+                TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
+            end)
+        end
         Btn.MouseButton1Click:Connect(callback)
     end
 
-    -- 1. Minimize Button (-) -> Hide UI
-    CreateControlBtn("-", function()
-        Main.Visible = false
-    end)
-
-    -- 2. Maximize Button (□) -> Toggle Sidebar
+    -- Ikon Modern (Gunakan ID aset Roblox yang bersih)
+    CreateIconBtn("rbxassetid://10347261010", function() Main.Visible = false end) -- Minimize Icon
     local SidebarOpen = true
-    CreateControlBtn("□", function()
+    CreateIconBtn("rbxassetid://10347260759", function() -- Maximize/Restore Icon
         SidebarOpen = not SidebarOpen
         if SidebarOpen then
-            TweenService:Create(Sidebar, TweenInfo.new(0.3), {Size = UDim2.new(0, 160, 1, 0)}):Play()
-            TweenService:Create(Fix, TweenInfo.new(0.3), {BackgroundTransparency = 0}):Play()
-            TitleLbl.Visible = true
+            TweenService:Create(Sidebar, TweenInfo.new(0.3), {Size = UDim2.new(0, 160, 1, -40)}):Play()
+            TweenService:Create(Content, TweenInfo.new(0.3), {Size = UDim2.new(1, -160, 1, -40), Position = UDim2.new(0, 160, 0, 40)}):Play()
         else
-            TweenService:Create(Sidebar, TweenInfo.new(0.3), {Size = UDim2.new(0, 0, 1, 0)}):Play()
-            TweenService:Create(Fix, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
-            TitleLbl.Visible = false
+            TweenService:Create(Sidebar, TweenInfo.new(0.3), {Size = UDim2.new(0, 0, 1, -40)}):Play()
+            TweenService:Create(Content, TweenInfo.new(0.3), {Size = UDim2.new(1, 0, 1, -40), Position = UDim2.new(0, 0, 0, 40)}):Play()
         end
     end)
+    CreateIconBtn("rbxassetid://10347260520", function() Gui:Destroy() end, true) -- Close Icon
 
-    -- 3. Close Button (X) -> Destroy
-    CreateControlBtn("X", function()
-        Gui:Destroy()
-    end, true)
-
-    -- TOGGLE VISIBILITY KEYBIND
     UserInputService.InputBegan:Connect(function(input, processed)
-        if not processed and input.KeyCode == Library.ToggleKey then
-            Main.Visible = not Main.Visible
-        end
+        if not processed and input.KeyCode == Library.ToggleKey then Main.Visible = not Main.Visible end
     end)
 
+    -- ** SIDEBAR SECTION **
+    local Sidebar = Create("Frame", {
+        Parent = Main, Size = UDim2.new(0, 160, 1, -40), Position = UDim2.new(0, 0, 0, 40), BorderSizePixel = 0, ClipsDescendants = true
+    })
+    ApplyTheme(Sidebar, "BackgroundColor3", "Sidebar")
 
-    -- [[ TABS & CONTENT ]]
     local TabContainer = Create("ScrollingFrame", {
-        Parent = Sidebar, Size = UDim2.new(1, 0, 1, -70), Position = UDim2.new(0, 0, 0, 70),
+        Parent = Sidebar, Size = UDim2.new(1, 0, 1, 0), Position = UDim2.new(0, 0, 0, 0),
         BackgroundTransparency = 1, ScrollBarThickness = 0, CanvasSize = UDim2.new(0,0,0,0)
     })
     Create("UIListLayout", {Parent = TabContainer, Padding = UDim.new(0, 5)})
-    Create("UIPadding", {Parent = TabContainer, PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10)})
+    Create("UIPadding", {Parent = TabContainer, PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10), PaddingTop = UDim.new(0, 15)})
 
+    -- ** MAIN CONTENT SECTION **
     local Content = Create("Frame", {
-        Parent = Main, Size = UDim2.new(1, -170, 1, -20), Position = UDim2.new(0, 165, 0, 10),
-        BackgroundTransparency = 1, ClipsDescendants = true
+        Parent = Main, Size = UDim2.new(1, -160, 1, -40), Position = UDim2.new(0, 160, 0, 40),
+        BackgroundTransparency = 0, BorderSizePixel = 0, ClipsDescendants = true
     })
-
-    -- Dragging Content Area (Backup jika sidebar diminimize)
-    MakeDraggable(Content, Main)
+    ApplyTheme(Content, "BackgroundColor3", "Content")
 
     local Window = {}
     local FirstTab = true
@@ -240,10 +232,10 @@ function Library:CreateWindow(title)
             ScrollBarThickness = 2, CanvasSize = UDim2.new(0,0,0,0), ScrollBarImageColor3 = Color3.fromRGB(60,60,60)
         })
         local Layout = Create("UIListLayout", {Parent = Page, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 8)})
-        Create("UIPadding", {Parent = Page, PaddingTop = UDim.new(0, 5), PaddingRight = UDim.new(0, 5)})
+        Create("UIPadding", {Parent = Page, PaddingTop = UDim.new(0, 15), PaddingRight = UDim.new(0, 10), PaddingLeft = UDim.new(0, 10)})
 
         Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-            Page.CanvasSize = UDim2.new(0, 0, 0, Layout.AbsoluteContentSize.Y + 10)
+            Page.CanvasSize = UDim2.new(0, 0, 0, Layout.AbsoluteContentSize.Y + 30)
         end)
 
         local function Activate()
@@ -266,6 +258,7 @@ function Library:CreateWindow(title)
 
         local Elements = {}
 
+        -- [[ ELEMENT: SECTION ]]
         function Elements:Section(text)
             local F = Create("Frame", {Parent = Page, Size = UDim2.new(1, 0, 0, 30), BackgroundTransparency = 1})
             local L = Create("TextLabel", {
@@ -276,13 +269,14 @@ function Library:CreateWindow(title)
             Create("Frame", {Parent = F, Size = UDim2.new(1, 0, 0, 1), Position = UDim2.new(0, 0, 1, -1), BackgroundColor3 = Library.CurrentTheme.Outline})
         end
 
+        -- [[ ELEMENT: BUTTON ]]
         function Elements:Button(text, callback)
             local B = Create("TextButton", {
                 Parent = Page, Text = "", Size = UDim2.new(1, 0, 0, 42), AutoButtonColor = false, BackgroundTransparency = 0
             })
             Create("UICorner", {Parent = B, CornerRadius = UDim.new(0, 6)})
             Create("UIStroke", {Parent = B, Thickness = 1})
-            ApplyTheme(B, "BackgroundColor3", "Content")
+            ApplyTheme(B, "BackgroundColor3", "Sidebar") -- Sedikit lebih gelap dari content
             ApplyTheme(B.UIStroke, "Color", "Outline")
             
             local L = Create("TextLabel", {
@@ -297,9 +291,10 @@ function Library:CreateWindow(title)
                 if callback then callback() end
             end)
             B.MouseEnter:Connect(function() ApplyTheme(B, "BackgroundColor3", "Hover") end)
-            B.MouseLeave:Connect(function() ApplyTheme(B, "BackgroundColor3", "Content") end)
+            B.MouseLeave:Connect(function() ApplyTheme(B, "BackgroundColor3", "Sidebar") end)
         end
 
+        -- [[ ELEMENT: TOGGLE ]]
         function Elements:Toggle(text, default, callback)
             local tog = default or false
             local B = Create("TextButton", {
@@ -307,7 +302,7 @@ function Library:CreateWindow(title)
             })
             Create("UICorner", {Parent = B, CornerRadius = UDim.new(0, 6)})
             Create("UIStroke", {Parent = B, Thickness = 1})
-            ApplyTheme(B, "BackgroundColor3", "Content")
+            ApplyTheme(B, "BackgroundColor3", "Sidebar")
             ApplyTheme(B.UIStroke, "Color", "Outline")
             local L = Create("TextLabel", {
                 Parent = B, Text = text, Size = UDim2.new(1, -55, 1, 0), Position = UDim2.new(0, 10, 0, 0),
@@ -332,13 +327,14 @@ function Library:CreateWindow(title)
             B.MouseButton1Click:Connect(function() tog = not tog; Update(); if callback then callback(tog) end end)
         end
 
+        -- [[ ELEMENT: SLIDER ]]
         function Elements:Slider(text, min, max, default, callback)
             local val = default or min
             local F = Create("Frame", {Parent = Page, Size = UDim2.new(1, 0, 0, 50), BackgroundTransparency = 1})
             local C = Create("Frame", {Parent = F, Size = UDim2.new(1, 0, 1, 0)})
             Create("UICorner", {Parent = C, CornerRadius = UDim.new(0, 6)})
             Create("UIStroke", {Parent = C, Thickness = 1})
-            ApplyTheme(C, "BackgroundColor3", "Content")
+            ApplyTheme(C, "BackgroundColor3", "Sidebar")
             ApplyTheme(C.UIStroke, "Color", "Outline")
             local L = Create("TextLabel", {
                 Parent = C, Text = text, Size = UDim2.new(1, 0, 0, 20), Position = UDim2.new(0, 10, 0, 5),
@@ -372,17 +368,18 @@ function Library:CreateWindow(title)
             UserInputService.InputChanged:Connect(function(i) if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then Update(i) end end)
         end
 
+        -- [[ ELEMENT: DROPDOWN ]]
         function Elements:Dropdown(text, options, callback)
             local dropped = false
             local Container = Create("Frame", {
-                Parent = Page, Size = UDim2.new(1, 0, 0, 42), BackgroundTransparency = 1, ClipsDescendants = true
+                Parent = Page, Size = UDim2.new(1, 0, 0, 42), BackgroundTransparency = 1, ClipsDescendants = true, ZIndex = 10
             })
             local MainBtn = Create("TextButton", {
-                Parent = Container, Text = "", Size = UDim2.new(1, 0, 0, 42), AutoButtonColor = false, ZIndex = 2
+                Parent = Container, Text = "", Size = UDim2.new(1, 0, 0, 42), AutoButtonColor = false, ZIndex = 11
             })
             Create("UICorner", {Parent = MainBtn, CornerRadius = UDim.new(0, 6)})
             Create("UIStroke", {Parent = MainBtn, Thickness = 1})
-            ApplyTheme(MainBtn, "BackgroundColor3", "Content")
+            ApplyTheme(MainBtn, "BackgroundColor3", "Sidebar")
             ApplyTheme(MainBtn.UIStroke, "Color", "Outline")
             local Label = Create("TextLabel", {
                 Parent = MainBtn, Text = text .. "...", Size = UDim2.new(1, -40, 1, 0), Position = UDim2.new(0, 10, 0, 0),
@@ -396,13 +393,13 @@ function Library:CreateWindow(title)
             ApplyTheme(Arrow, "ImageColor3", "SubText")
             local List = Create("ScrollingFrame", {
                 Parent = Container, Size = UDim2.new(1, 0, 0, 0), Position = UDim2.new(0, 0, 0, 45),
-                BackgroundTransparency = 1, ScrollBarThickness = 2, CanvasSize = UDim2.new(0,0,0,0)
+                BackgroundTransparency = 1, ScrollBarThickness = 2, CanvasSize = UDim2.new(0,0,0,0), ZIndex = 12
             })
             local ListLayout = Create("UIListLayout", {Parent = List, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4)})
             for _, opt in ipairs(options) do
                 local OptBtn = Create("TextButton", {
                     Parent = List, Text = opt, Size = UDim2.new(1, 0, 0, 30), Font = Enum.Font.GothamMedium,
-                    TextSize = 13, AutoButtonColor = false
+                    TextSize = 13, AutoButtonColor = false, ZIndex = 13
                 })
                 Create("UICorner", {Parent = OptBtn, CornerRadius = UDim.new(0, 6)})
                 ApplyTheme(OptBtn, "BackgroundColor3", "Dropdown")

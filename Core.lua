@@ -41,6 +41,3 @@ Settings:Dropdown("Select Interface Theme", {"Midnight", "Ocean", "Blood"}, func
 end)
 
 Settings:Section("Other")
-Settings:Button("Unload Script", function()
-    game.CoreGui:FindFirstChild("WerskieeeHubFinal"):Destroy()
-end)
