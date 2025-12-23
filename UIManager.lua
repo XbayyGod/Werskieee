@@ -1,5 +1,5 @@
 -- [[ Filename: UIManager.lua ]]
--- VERSION: V7.3 (FIXED SPACING: More Gap Between Items)
+-- VERSION: V7.4 (UNIFIED CARD SYSTEM: Header & Content are ONE Object)
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -16,40 +16,37 @@ Library.Themes = {
         Main        = Color3.fromRGB(20, 20, 20),
         Header      = Color3.fromRGB(25, 25, 25),
         Sidebar     = Color3.fromRGB(25, 25, 25),
-        SectionBg   = Color3.fromRGB(35, 35, 35),
-        CardBg      = Color3.fromRGB(28, 28, 28),
+        CardBg      = Color3.fromRGB(30, 30, 30), -- Warna Kartu Utama
         Text        = Color3.fromRGB(255, 255, 255),
-        SubText     = Color3.fromRGB(160, 160, 160),
+        SubText     = Color3.fromRGB(170, 170, 170),
         Accent      = Color3.fromRGB(115, 100, 255),
-        Outline     = Color3.fromRGB(50, 50, 50),
-        Hover       = Color3.fromRGB(45, 45, 45),
+        Outline     = Color3.fromRGB(60, 60, 60),
+        Hover       = Color3.fromRGB(50, 50, 50),
         Dropdown    = Color3.fromRGB(40, 40, 40),
         ControlIcon = Color3.fromRGB(200, 200, 200),
-        ControlHover= Color3.fromRGB(60, 60, 60),
-        ControlBg   = Color3.fromRGB(40, 40, 40)
+        ControlHover= Color3.fromRGB(70, 70, 70),
+        ControlBg   = Color3.fromRGB(45, 45, 45) -- Background Slider/Switch
     },
     Ocean = {
         Main        = Color3.fromRGB(15, 25, 35),
         Header      = Color3.fromRGB(20, 30, 40),
         Sidebar     = Color3.fromRGB(20, 30, 40),
-        SectionBg   = Color3.fromRGB(30, 45, 55),
-        CardBg      = Color3.fromRGB(20, 35, 45),
+        CardBg      = Color3.fromRGB(25, 40, 50),
         Text        = Color3.fromRGB(230, 255, 255),
         SubText     = Color3.fromRGB(140, 170, 170),
         Accent      = Color3.fromRGB(0, 190, 255),
         Outline     = Color3.fromRGB(50, 70, 90),
         Hover       = Color3.fromRGB(40, 60, 70),
-        Dropdown    = Color3.fromRGB(35, 50, 60),
+        Dropdown    = Color3.fromRGB(30, 50, 60),
         ControlIcon = Color3.fromRGB(180, 220, 255),
         ControlHover= Color3.fromRGB(50, 70, 90),
-        ControlBg   = Color3.fromRGB(30, 45, 55)
+        ControlBg   = Color3.fromRGB(35, 55, 65)
     },
     Blood = {
         Main        = Color3.fromRGB(25, 18, 18),
         Header      = Color3.fromRGB(30, 20, 20),
         Sidebar     = Color3.fromRGB(30, 20, 20),
-        SectionBg   = Color3.fromRGB(45, 30, 30),
-        CardBg      = Color3.fromRGB(35, 22, 22),
+        CardBg      = Color3.fromRGB(40, 25, 25),
         Text        = Color3.fromRGB(255, 230, 230),
         SubText     = Color3.fromRGB(180, 140, 140),
         Accent      = Color3.fromRGB(220, 60, 60),
@@ -58,7 +55,7 @@ Library.Themes = {
         Dropdown    = Color3.fromRGB(50, 30, 30),
         ControlIcon = Color3.fromRGB(255, 200, 200),
         ControlHover= Color3.fromRGB(100, 50, 50),
-        ControlBg   = Color3.fromRGB(45, 30, 30)
+        ControlBg   = Color3.fromRGB(55, 35, 35)
     }
 }
 Library.CurrentTheme = Library.Themes.Midnight
@@ -90,16 +87,16 @@ end
 
 -- [[ 3. MAIN UI GENERATOR ]]
 function Library:CreateWindow(title_ignored)
-    if CoreGui:FindFirstChild("WerskieeeHubV7_3") then CoreGui.WerskieeeHubV7_3:Destroy() end
-    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubV7_3") then 
-        game.Players.LocalPlayer.PlayerGui.WerskieeeHubV7_3:Destroy() 
+    if CoreGui:FindFirstChild("WerskieeeHubV7_4") then CoreGui.WerskieeeHubV7_4:Destroy() end
+    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubV7_4") then 
+        game.Players.LocalPlayer.PlayerGui.WerskieeeHubV7_4:Destroy() 
     end
 
     local TargetParent = nil
     local s, r = pcall(function() return gethui() end)
     if s and r then TargetParent = r else TargetParent = game.Players.LocalPlayer:WaitForChild("PlayerGui") end
 
-    local Gui = Create("ScreenGui", {Name = "WerskieeeHubV7_3", Parent = TargetParent, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, ResetOnSpawn = false})
+    local Gui = Create("ScreenGui", {Name = "WerskieeeHubV7_4", Parent = TargetParent, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, ResetOnSpawn = false})
     
     local Main = Create("Frame", {
         Parent = Gui, Size = UDim2.fromOffset(600, 400), Position = UDim2.fromScale(0.5, 0.5),
@@ -158,7 +155,7 @@ function Library:CreateWindow(title_ignored)
     Create("UIListLayout", {Parent = TabContainer, Padding = UDim.new(0, 5)})
     Create("UIPadding", {Parent = TabContainer, PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10), PaddingTop = UDim.new(0, 5)})
 
-    -- CONTENT AREA
+    -- CONTENT (Canvas Transparan)
     local Content = Create("Frame", {
         Parent = Main, Size = UDim2.new(1, -170, 1, -50), Position = UDim2.new(0, 165, 0, 45), 
         BackgroundTransparency = 1, BorderSizePixel = 0, ClipsDescendants = true
@@ -210,31 +207,35 @@ function Library:CreateWindow(title_ignored)
     local function CreateElements(ParentFrame)
         local Elements = {}
 
-        -- >> SECTION (DROPDOWN GROUP)
+        -- >> GROUP (UNIFIED CARD)
         function Elements:Group(text)
             local isOpened = true
             
-            local SectionContainer = Create("Frame", {
+            -- CARD UTAMA (Background Warna)
+            local GroupCard = Create("Frame", {
                 Parent = ParentFrame, 
-                Size = UDim2.new(1, 0, 0, 36),
-                BackgroundTransparency = 0, 
+                Size = UDim2.new(1, 0, 0, 36), -- Awal tinggi header
+                BackgroundTransparency = 0,
                 ClipsDescendants = true,
                 BorderSizePixel = 0
             })
-            Create("UICorner", {Parent = SectionContainer, CornerRadius = UDim.new(0, 8)})
-            ApplyTheme(SectionContainer, "BackgroundColor3", "CardBg")
+            Create("UICorner", {Parent = GroupCard, CornerRadius = UDim.new(0, 8)})
+            ApplyTheme(GroupCard, "BackgroundColor3", "CardBg") -- Satu Warna untuk semua
 
+            -- Border Halus
+            local Stroke = Create("UIStroke", {Parent = GroupCard, Thickness = 1, Transparency = 0.6})
+            ApplyTheme(Stroke, "Color", "Outline")
+
+            -- HEADER (Transparan, menempel di Card)
             local HeaderBtn = Create("TextButton", {
-                Parent = SectionContainer, Text = "", Size = UDim2.new(1, 0, 0, 36),
-                AutoButtonColor = false, ZIndex = 2, BorderSizePixel = 0
+                Parent = GroupCard, Text = "", Size = UDim2.new(1, 0, 0, 36),
+                BackgroundTransparency = 1, AutoButtonColor = false, ZIndex = 2
             })
-            Create("UICorner", {Parent = HeaderBtn, CornerRadius = UDim.new(0, 8)})
-            ApplyTheme(HeaderBtn, "BackgroundColor3", "SectionBg")
-
+            
             local Label = Create("TextLabel", {
                 Parent = HeaderBtn, Text = text, Size = UDim2.new(1, -35, 1, 0), Position = UDim2.new(0, 12, 0, 0),
                 TextXAlignment = Enum.TextXAlignment.Left, Font = Enum.Font.GothamBold, 
-                TextSize = 15, BackgroundTransparency = 1
+                TextSize = 16, BackgroundTransparency = 1
             })
             ApplyTheme(Label, "TextColor3", "Accent")
 
@@ -244,21 +245,20 @@ function Library:CreateWindow(title_ignored)
             })
             ApplyTheme(Arrow, "ImageColor3", "SubText")
 
+            -- CONTAINER ISI (Transparan)
             local Container = Create("Frame", {
-                Parent = SectionContainer, Size = UDim2.new(1, 0, 0, 0), Position = UDim2.new(0, 0, 0, 36),
-                BackgroundTransparency = 1 
+                Parent = GroupCard, Size = UDim2.new(1, 0, 0, 0), Position = UDim2.new(0, 0, 0, 36),
+                BackgroundTransparency = 1
             })
-            -- DISINI PERUBAHANNYA: PADDING DIPERBESAR
             local ContainerLayout = Create("UIListLayout", {
-                Parent = Container, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 8) -- Jarak antar item (Sebelumnya 2, sekarang 8)
+                Parent = Container, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 6)
             })
-            -- PADDING ATAS BAWAH JUGA DITAMBAH
-            Create("UIPadding", {Parent = Container, PaddingTop = UDim.new(0, 12), PaddingBottom = UDim.new(0, 12), PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10)})
+            Create("UIPadding", {Parent = Container, PaddingTop = UDim.new(0, 5), PaddingBottom = UDim.new(0, 12), PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10)})
 
             local function UpdateSize()
                 local contentHeight = ContainerLayout.AbsoluteContentSize.Y
-                local targetHeight = isOpened and (36 + contentHeight + 24) or 36 -- 24 adalah total padding atas+bawah
-                TweenService:Create(SectionContainer, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                local targetHeight = isOpened and (36 + contentHeight + 17) or 36
+                TweenService:Create(GroupCard, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                     Size = UDim2.new(1, 0, 0, targetHeight)
                 }):Play()
                 TweenService:Create(Arrow, TweenInfo.new(0.3), {Rotation = isOpened and 180 or 0}):Play()
@@ -282,7 +282,7 @@ function Library:CreateWindow(title_ignored)
         function Elements:Button(text, callback)
             local B = Create("TextButton", {
                 Parent = ParentFrame, Text = "", Size = UDim2.new(1, 0, 0, 32), AutoButtonColor = false, 
-                BackgroundTransparency = 1, BorderSizePixel = 0
+                BackgroundTransparency = 1 -- Transparan (ikut warna card)
             })
             
             local L = Create("TextLabel", {
@@ -306,7 +306,7 @@ function Library:CreateWindow(title_ignored)
             local tog = default or false
             local B = Create("TextButton", {
                 Parent = ParentFrame, Text = "", Size = UDim2.new(1, 0, 0, 32), AutoButtonColor = false,
-                BackgroundTransparency = 1, BorderSizePixel = 0
+                BackgroundTransparency = 1
             })
             
             local L = Create("TextLabel", {
@@ -408,7 +408,7 @@ function Library:CreateWindow(title_ignored)
                 BorderSizePixel = 0
             })
             Create("UICorner", {Parent = List, CornerRadius = UDim.new(0, 6)})
-            ApplyTheme(List, "BackgroundColor3", "CardBg")
+            ApplyTheme(List, "BackgroundColor3", "CardBg") -- List tetap punya background biar kebaca
             local ListStroke = Create("UIStroke", {Parent = List, Thickness = 1})
             ApplyTheme(ListStroke, "Color", "Outline")
 
