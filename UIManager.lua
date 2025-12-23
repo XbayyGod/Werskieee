@@ -1,5 +1,5 @@
 -- [[ Filename: UIManager.lua ]]
--- VERSION: V7 (CLEAN SECTION DROPDOWNS: No Floating Cards, Perfect Resizing)
+-- VERSION: V7 (PERFECT RESIZING GROUPS - NO CUT OFF)
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -16,8 +16,8 @@ Library.Themes = {
         Main        = Color3.fromRGB(20, 20, 20),
         Header      = Color3.fromRGB(25, 25, 25),
         Sidebar     = Color3.fromRGB(25, 25, 25),
-        Content     = Color3.fromRGB(30, 30, 30), -- Background konten utama
-        SectionBg   = Color3.fromRGB(38, 38, 38), -- Warna Header Section Dropdown
+        Content     = Color3.fromRGB(30, 30, 30),
+        SectionBg   = Color3.fromRGB(38, 38, 38), -- Warna Background Group
         Text        = Color3.fromRGB(255, 255, 255),
         SubText     = Color3.fromRGB(170, 170, 170),
         Accent      = Color3.fromRGB(115, 100, 255),
@@ -32,7 +32,7 @@ Library.Themes = {
         Header      = Color3.fromRGB(20, 30, 40),
         Sidebar     = Color3.fromRGB(20, 30, 40),
         Content     = Color3.fromRGB(25, 35, 45),
-        SectionBg   = Color3.fromRGB(30, 45, 55),
+        SectionBg   = Color3.fromRGB(35, 50, 60),
         Text        = Color3.fromRGB(230, 255, 255),
         SubText     = Color3.fromRGB(140, 170, 170),
         Accent      = Color3.fromRGB(0, 190, 255),
@@ -88,7 +88,9 @@ end
 -- [[ 3. MAIN UI GENERATOR ]]
 function Library:CreateWindow(title_ignored)
     if CoreGui:FindFirstChild("WerskieeeHubV7") then CoreGui.WerskieeeHubV7:Destroy() end
-    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubV7") then game.Players.LocalPlayer.PlayerGui.WerskieeeHubV7:Destroy() end
+    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubV7") then 
+        game.Players.LocalPlayer.PlayerGui.WerskieeeHubV7:Destroy() 
+    end
 
     local TargetParent = nil
     local s, r = pcall(function() return gethui() end)
@@ -100,7 +102,7 @@ function Library:CreateWindow(title_ignored)
         Parent = Gui, Size = UDim2.fromOffset(600, 400), Position = UDim2.fromScale(0.5, 0.5),
         AnchorPoint = Vector2.new(0.5, 0.5), BorderSizePixel = 0, ClipsDescendants = true
     })
-    Create("UICorner", {Parent = Main, CornerRadius = UDim.new(0, 12)})
+    Create("UICorner", {Parent = Main, CornerRadius = UDim.new(0, 10)})
     Create("UIStroke", {Parent = Main, Thickness = 1})
     ApplyTheme(Main, "BackgroundColor3", "Main")
     ApplyTheme(Main.UIStroke, "Color", "Outline")
@@ -143,6 +145,7 @@ function Library:CreateWindow(title_ignored)
     Create("UIListLayout", {Parent = ControlHolder, FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Right, Padding = UDim.new(0, 6), SortOrder = Enum.SortOrder.LayoutOrder})
     Create("UIPadding", {Parent = ControlHolder, PaddingRight = UDim.new(0, 10), PaddingTop = UDim.new(0, 6), PaddingBottom = UDim.new(0, 6)})
 
+    -- Sidebar & Content
     local Sidebar = Create("Frame", {
         Parent = Main, Size = UDim2.new(0, 160, 1, -40), Position = UDim2.new(0, 0, 0, 40), BorderSizePixel = 0, BackgroundTransparency = 1
     })
@@ -153,15 +156,14 @@ function Library:CreateWindow(title_ignored)
     Create("UIListLayout", {Parent = TabContainer, Padding = UDim.new(0, 5)})
     Create("UIPadding", {Parent = TabContainer, PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10), PaddingTop = UDim.new(0, 5)})
 
-    -- MAIN CONTENT AREA (Sekarang punya warna background lagi)
     local Content = Create("Frame", {
         Parent = Main, Size = UDim2.new(1, -170, 1, -50), Position = UDim2.new(0, 165, 0, 45), 
         BackgroundTransparency = 0, BorderSizePixel = 0, ClipsDescendants = true
     })
-    Create("UICorner", {Parent = Content, CornerRadius = UDim.new(0, 10)})
-    ApplyTheme(Content, "BackgroundColor3", "Content") -- Kembali menggunakan warna Content
+    -- Content background diaktifkan tapi transparan/warna content agar menyatu
+    ApplyTheme(Content, "BackgroundColor3", "Content")
 
-    -- BUTTONS
+    -- BUTTONS CONTROLS
     local function CreateBtn(order, iconID, isClose, callback)
         local Btn = Create("TextButton", {
             Parent = ControlHolder, Text = "", Size = UDim2.new(0, 28, 0, 28), AutoButtonColor = false, 
@@ -207,30 +209,31 @@ function Library:CreateWindow(title_ignored)
     local function CreateElements(ParentFrame)
         local Elements = {}
 
-        -- >> SECTION DROPDOWN (Konsep Baru)
+        -- >> SECTION (DROPDOWN GROUP)
         function Elements:Group(text)
             local isOpened = true
             
-            -- Container utama untuk Section Header + Isinya
+            -- Frame Utama untuk Group
             local SectionContainer = Create("Frame", {
                 Parent = ParentFrame, 
-                Size = UDim2.new(1, 0, 0, 34), -- Tinggi awal hanya header
+                Size = UDim2.new(1, 0, 0, 36), -- Default tinggi header
                 BackgroundTransparency = 1,
-                ClipsDescendants = true -- Penting agar animasi mulus
+                ClipsDescendants = true
             })
 
-            -- Header Section (Tombol yang bisa diklik)
+            -- Header Button (Warna berbeda)
             local HeaderBtn = Create("TextButton", {
-                Parent = SectionContainer, Text = "", Size = UDim2.new(1, 0, 0, 34),
+                Parent = SectionContainer, Text = "", Size = UDim2.new(1, 0, 0, 36),
                 AutoButtonColor = false, ZIndex = 2
             })
             Create("UICorner", {Parent = HeaderBtn, CornerRadius = UDim.new(0, 8)})
-            ApplyTheme(HeaderBtn, "BackgroundColor3", "SectionBg") -- Warna sedikit berbeda dari content
+            ApplyTheme(HeaderBtn, "BackgroundColor3", "SectionBg")
 
             local Label = Create("TextLabel", {
                 Parent = HeaderBtn, Text = text, Size = UDim2.new(1, -35, 1, 0), Position = UDim2.new(0, 12, 0, 0),
                 TextXAlignment = Enum.TextXAlignment.Left, Font = Enum.Font.GothamBold, 
-                TextSize = 14, BackgroundTransparency = 1
+                TextSize = 15, -- UKURAN TEKS GROUP (Pas)
+                BackgroundTransparency = 1
             })
             ApplyTheme(Label, "TextColor3", "Accent")
 
@@ -240,9 +243,9 @@ function Library:CreateWindow(title_ignored)
             })
             ApplyTheme(Arrow, "ImageColor3", "SubText")
 
-            -- Wadah untuk elemen-elemen di dalam section
+            -- Wadah Item (Di bawah header)
             local Container = Create("Frame", {
-                Parent = SectionContainer, Size = UDim2.new(1, 0, 0, 0), Position = UDim2.new(0, 0, 0, 34),
+                Parent = SectionContainer, Size = UDim2.new(1, 0, 0, 0), Position = UDim2.new(0, 0, 0, 36),
                 BackgroundTransparency = 1
             })
             local ContainerLayout = Create("UIListLayout", {
@@ -250,21 +253,19 @@ function Library:CreateWindow(title_ignored)
             })
             Create("UIPadding", {Parent = Container, PaddingTop = UDim.new(0, 10), PaddingBottom = UDim.new(0, 5), PaddingLeft = UDim.new(0, 5), PaddingRight = UDim.new(0, 5)})
 
+            -- LOGIKA RESIZING (PERBAIKAN UTAMA)
             local function UpdateSize()
-                -- Perhitungan tinggi yang SANGAT AKURAT agar tidak terpotong
                 local contentHeight = ContainerLayout.AbsoluteContentSize.Y
-                local paddingY = 15 -- Padding atas bawah container
-                local headerHeight = 34
-                
-                local targetHeight = isOpened and (headerHeight + contentHeight + paddingY) or headerHeight
+                -- Tambahkan buffer padding biar ga mepet/kepotong
+                local targetHeight = isOpened and (36 + contentHeight + 20) or 36
                 
                 TweenService:Create(SectionContainer, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                     Size = UDim2.new(1, 0, 0, targetHeight)
                 }):Play()
-                
                 TweenService:Create(Arrow, TweenInfo.new(0.3), {Rotation = isOpened and 180 or 0}):Play()
             end
             
+            -- Update saat ada elemen ditambah atau diubah
             ContainerLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
                 if isOpened then UpdateSize() end
             end)
@@ -274,27 +275,17 @@ function Library:CreateWindow(title_ignored)
                 UpdateSize()
             end)
 
+            -- Recursion: Semua elemen di bawah ini masuk ke Container
             return CreateElements(Container)
         end
-        
-        -- >> SECTION TEXT (Judul statis biasa, jarang dipakai kalau sudah ada Group)
-        function Elements:Section(text)
-             local F = Create("Frame", {Parent = ParentFrame, Size = UDim2.new(1, 0, 0, 25), BackgroundTransparency = 1})
-            local L = Create("TextLabel", {
-                Parent = F, Text = text, Size = UDim2.new(1, 0, 1, 0), Font = Enum.Font.GothamBold,
-                TextSize = 12, TextXAlignment = Enum.TextXAlignment.Left, BackgroundTransparency = 1
-            })
-            ApplyTheme(L, "TextColor3", "SubText")
-        end
-
 
         function Elements:Button(text, callback)
             local B = Create("TextButton", {
-                Parent = ParentFrame, Text = "", Size = UDim2.new(1, 0, 0, 36), AutoButtonColor = false, BackgroundTransparency = 0
+                Parent = ParentFrame, Text = "", Size = UDim2.new(1, 0, 0, 38), AutoButtonColor = false, BackgroundTransparency = 0
             })
             Create("UICorner", {Parent = B, CornerRadius = UDim.new(0, 6)})
             Create("UIStroke", {Parent = B, Thickness = 1})
-            ApplyTheme(B, "BackgroundColor3", "Main") 
+            ApplyTheme(B, "BackgroundColor3", "Main") -- Warna tombol mengikuti tema Main (gelap)
             ApplyTheme(B.UIStroke, "Color", "Outline")
             local L = Create("TextLabel", {
                 Parent = B, Text = text, Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1,
@@ -302,9 +293,9 @@ function Library:CreateWindow(title_ignored)
             })
             ApplyTheme(L, "TextColor3", "Text")
             B.MouseButton1Click:Connect(function()
-                TweenService:Create(B, TweenInfo.new(0.1), {Size = UDim2.new(1, -4, 0, 32)}):Play()
+                TweenService:Create(B, TweenInfo.new(0.1), {Size = UDim2.new(1, -4, 0, 34)}):Play()
                 wait(0.1)
-                TweenService:Create(B, TweenInfo.new(0.1), {Size = UDim2.new(1, 0, 0, 36)}):Play()
+                TweenService:Create(B, TweenInfo.new(0.1), {Size = UDim2.new(1, 0, 0, 38)}):Play()
                 if callback then callback() end
             end)
             B.MouseEnter:Connect(function() ApplyTheme(B, "BackgroundColor3", "Hover") end)
@@ -314,7 +305,7 @@ function Library:CreateWindow(title_ignored)
         function Elements:Toggle(text, default, callback)
             local tog = default or false
             local B = Create("TextButton", {
-                Parent = ParentFrame, Text = "", Size = UDim2.new(1, 0, 0, 36), AutoButtonColor = false
+                Parent = ParentFrame, Text = "", Size = UDim2.new(1, 0, 0, 38), AutoButtonColor = false
             })
             Create("UICorner", {Parent = B, CornerRadius = UDim.new(0, 6)})
             Create("UIStroke", {Parent = B, Thickness = 1})
@@ -345,7 +336,7 @@ function Library:CreateWindow(title_ignored)
 
         function Elements:Slider(text, min, max, default, callback)
             local val = default or min
-            local F = Create("Frame", {Parent = ParentFrame, Size = UDim2.new(1, 0, 0, 45), BackgroundTransparency = 1})
+            local F = Create("Frame", {Parent = ParentFrame, Size = UDim2.new(1, 0, 0, 48), BackgroundTransparency = 1})
             local C = Create("Frame", {Parent = F, Size = UDim2.new(1, 0, 1, 0)})
             Create("UICorner", {Parent = C, CornerRadius = UDim.new(0, 6)})
             Create("UIStroke", {Parent = C, Thickness = 1})
@@ -461,9 +452,11 @@ function Library:CreateWindow(title_ignored)
             Parent = Content, Size = UDim2.fromScale(1, 1), Visible = false, BackgroundTransparency = 1,
             ScrollBarThickness = 2, CanvasSize = UDim2.new(0,0,0,0), ScrollBarImageColor3 = Color3.fromRGB(60,60,60)
         })
-        local Layout = Create("UIListLayout", {Parent = Page, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 12)}) -- Jarak antar Section Dropdown
-        Create("UIPadding", {Parent = Page, PaddingTop = UDim.new(0, 15), PaddingRight = UDim.new(0, 15), PaddingLeft = UDim.new(0, 15), PaddingBottom = UDim.new(0, 20)})
+        -- PENTING: Layout Page ini yang mengatur jarak antar Group
+        local Layout = Create("UIListLayout", {Parent = Page, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 10)})
+        Create("UIPadding", {Parent = Page, PaddingTop = UDim.new(0, 15), PaddingRight = UDim.new(0, 10), PaddingLeft = UDim.new(0, 10), PaddingBottom = UDim.new(0, 20)})
 
+        -- PENTING: Kalkulasi tinggi halaman harus akurat mengikuti perubahan ukuran Group
         Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
             Page.CanvasSize = UDim2.new(0, 0, 0, Layout.AbsoluteContentSize.Y + 40)
         end)
