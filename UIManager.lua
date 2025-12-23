@@ -155,18 +155,7 @@ function Library:CreateWindow(title_ignored)
         Btn.MouseButton1Click:Connect(callback)
     end
 
-    CreateBtn(1, "rbxassetid://10734896206", false, function() Main.Visible = false end)
-    local SidebarOpen = true
-    CreateBtn(2, "rbxassetid://10734965702", false, function()
-        SidebarOpen = not SidebarOpen
-        if SidebarOpen then
-            TweenService:Create(Sidebar, TweenInfo.new(0.3), {Size = UDim2.new(0, 160, 1, -40)}):Play()
-            TweenService:Create(Content, TweenInfo.new(0.3), {Size = UDim2.new(1, -170, 1, -50), Position = UDim2.new(0, 165, 0, 45)}):Play()
-        else
-            TweenService:Create(Sidebar, TweenInfo.new(0.3), {Size = UDim2.new(0, 0, 1, -40)}):Play()
-            TweenService:Create(Content, TweenInfo.new(0.3), {Size = UDim2.new(1, -20, 1, -50), Position = UDim2.new(0, 10, 0, 45)}):Play()
-        end
-    end)
+    CreateBtn(2, "rbxassetid://10734896206", false, function() Main.Visible = false end)
     CreateBtn(3, "rbxassetid://6031094678", true, function() Gui:Destroy() end)
 
     UserInputService.InputBegan:Connect(function(input, processed)
@@ -178,16 +167,16 @@ function Library:CreateWindow(title_ignored)
         local Elements = {}
 
         -- >> GROUP (INI YANG GUA UBAH TOTAL: HEADER -> GARIS -> JARAK -> KONTEN)
--- [[ GANTI FUNGSI Elements:Group DENGAN YANG INI ]]
+        -- [[ GANTI FUNGSI Elements:Group (VERSI JARAK JAUH) ]]
         function Elements:Group(text)
             local isOpened = true
             
             -- 1. CARD BACKGROUND
             local GroupCard = Create("Frame", {
                 Parent = ParentFrame, 
-                Size = UDim2.new(1, 0, 0, 44), -- Tinggi Header
+                Size = UDim2.new(1, 0, 0, 44), 
                 BackgroundTransparency = 0,
-                ClipsDescendants = true, -- Wajib True
+                ClipsDescendants = true,
                 BorderSizePixel = 0
             })
             Create("UICorner", {Parent = GroupCard, CornerRadius = UDim.new(0, 8)})
@@ -217,25 +206,26 @@ function Library:CreateWindow(title_ignored)
             })
             ApplyTheme(Arrow, "ImageColor3", "SubText")
 
-            -- 3. DIVIDER (Garis)
+            -- 3. DIVIDER
             local Divider = Create("Frame", {
                 Parent = GroupCard, Size = UDim2.new(1, 0, 0, 1), LayoutOrder = 1, BorderSizePixel = 0,
-                BackgroundTransparency = 0 -- Default muncul karena default isOpened = true
+                BackgroundTransparency = 0 
             })
             ApplyTheme(Divider, "BackgroundColor3", "Outline")
             
             -- 4. CONTAINER KONTEN
             local Container = Create("Frame", {
                 Parent = GroupCard, Size = UDim2.new(1, 0, 0, 0), LayoutOrder = 2,
-                BackgroundTransparency = 1, Visible = true -- Default visible
+                BackgroundTransparency = 1, Visible = true 
             })
             local ContainerLayout = Create("UIListLayout", {
-                Parent = Container, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 4)
+                Parent = Container, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 5)
             })
             
+            -- [[ BAGIAN INI YANG GUA UBAH BIAR MAKIN KE BAWAH ]]
             Create("UIPadding", {
                 Parent = Container, 
-                PaddingTop = UDim.new(0, 15),
+                PaddingTop = UDim.new(0, 30),    -- INI GUA GEDEIN JADI 30 (BIAR TURUN JAUH)
                 PaddingBottom = UDim.new(0, 15),
                 PaddingLeft = UDim.new(0, 10), 
                 PaddingRight = UDim.new(0, 10)
@@ -244,31 +234,27 @@ function Library:CreateWindow(title_ignored)
             local function UpdateSize()
                 local contentHeight = ContainerLayout.AbsoluteContentSize.Y
                 local headerHeight = 44
-                local fullHeight = headerHeight + contentHeight + 30 + 1 -- 30 padding + 1 divider
+                
+                -- Itungan padding: 30 (atas) + 15 (bawah) = 45 total padding
+                local fullHeight = headerHeight + contentHeight + 45 + 1 
                 local targetHeight = isOpened and fullHeight or headerHeight
                 
-                -- Animasi Panah
                 TweenService:Create(Arrow, TweenInfo.new(0.3), {Rotation = isOpened and 180 or 0}):Play()
                 
                 if isOpened then
-                    -- Kalau BUKA: Munculin dulu kontennya, baru animasi size biar mulus
                     Container.Visible = true
                     TweenService:Create(Divider, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
                     TweenService:Create(GroupCard, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                         Size = UDim2.new(1, 0, 0, targetHeight)
                     }):Play()
                 else
-                    -- Kalau TUTUP: Animasi size dulu, pas udah kelar baru umpetin (biar ga glitch visual)
                     TweenService:Create(GroupCard, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                         Size = UDim2.new(1, 0, 0, targetHeight)
                     }):Play()
                     TweenService:Create(Divider, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
                     
-                    -- Wait simpel pake delay task biar ga freeze thread
                     task.delay(0.3, function()
-                        if not isOpened then -- Cek lagi takutnya di spam klik
-                            Container.Visible = false
-                        end
+                        if not isOpened then Container.Visible = false end
                     end)
                 end
             end
