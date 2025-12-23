@@ -1,4 +1,4 @@
--- [[ Filename: Core.lua ]]
+-- [[ DEBUG LOADER ]] --
 local Owner = "XbayyGod"
 local Repo = "Werskieee"
 local Branch = "main"
@@ -7,39 +7,27 @@ local function GetUrl(scriptName)
     return string.format("https://raw.githubusercontent.com/%s/%s/%s/%s", Owner, Repo, Branch, scriptName)
 end
 
--- 1. Load UIManager (Library Custom Kita)
-local UI = loadstring(game:HttpGet(GetUrl("UIManager.lua")))()
-
--- 2. Buat Window
-local Window = UI:CreateWindow({
-    Name = "Werskieee Hub"
-})
-
--- 3. Buat Tab: MAIN
-local MainTab = Window:CreateTab("Main")
-
-MainTab:CreateSection("Character Info")
-
-MainTab:CreateButton("Print Hello", function()
-    print("Hello from custom UI!")
+-- Cek apakah Core.lua bisa diambil
+print("Mencoba mengambil Core.lua...")
+local success, result = pcall(function()
+    return game:HttpGet(GetUrl("Core.lua"))
 end)
 
-MainTab:CreateToggle("Auto Jump", false, function(State)
-    print("Auto Jump is now:", State)
-end)
-
-MainTab:CreateSection("Movement Settings")
-
-MainTab:CreateSlider("WalkSpeed", 16, 200, 16, function(Value)
-    if game.Players.LocalPlayer.Character then
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+if not success then
+    warn("GAGAL MENGAMBIL SCRIPT! Error HTTP/Internet.")
+    warn("Detail Error:", result)
+elseif string.find(result, "404: Not Found") then
+    warn("GITHUB ERROR: File tidak ditemukan (404).")
+    warn("Pastikan nama file di GitHub: Core.lua (perhatikan huruf besar/kecil)")
+    warn("Pastikan Repository PUBLIC.")
+else
+    print("Core.lua ditemukan! Menjalankan...")
+    -- Coba load
+    local loadFunc, err = loadstring(result)
+    if not loadFunc then
+        warn("SYNTAX ERROR di dalam Core.lua GitHub:")
+        warn(err)
+    else
+        loadFunc()
     end
-end)
-
--- 4. Buat Tab: COMBAT
-local CombatTab = Window:CreateTab("Combat")
-
-CombatTab:CreateSection("Aimbot Settings")
-CombatTab:CreateToggle("Enable Aimbot", false, function(State)
-    print("Aimbot:", State)
-end)
+end
