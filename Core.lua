@@ -7,57 +7,34 @@ local function GetUrl(scriptName)
     return string.format("https://raw.githubusercontent.com/%s/%s/%s/%s", Owner, Repo, Branch, scriptName)
 end
 
--- 1. Panggil UIManager yang sudah kita buat
-local UIManager = loadstring(game:HttpGet(GetUrl("UIManager.lua")))()
+-- 1. Load Custom UI Engine Kita
+local UI = loadstring(game:HttpGet(GetUrl("UIManager.lua")))()
 
--- 2. Buat Window (Warna otomatis Merah sesuai settingan di UIManager)
-local Window, Fluent, SaveManager, InterfaceManager = UIManager.LoadWindow("Werskieee Hub", "Premium Script")
+-- 2. Buat Window
+local Window = UI:CreateWindow("Werskieee Hub")
 
--- ==========================
--- CONTOH ISI MENU (TABS)
--- ==========================
+-- ===================================
+-- TAB: MAIN (FITUR UTAMA)
+-- ===================================
+local MainTab = Window:Tab("Main")
 
-local Tabs = {
-    Main = Window:AddTab({ Title = "Main", Icon = "home" }),
-    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
-}
+MainTab:Button("Print Halo", function()
+    print("Halo Bang!")
+end)
 
-local Options = Fluent.Options
+MainTab:Toggle("Auto Farm", false, function(state)
+    print("Auto Farm is:", state)
+end)
 
--- Contoh Tombol
-Tabs.Main:AddButton({
-    Title = "Test Button",
-    Description = "Coba klik ini",
-    Callback = function()
-        print("Tombol berhasil diklik!")
-    end
-})
+-- ===================================
+-- TAB: SETTINGS (GANTI TEMA DISINI)
+-- ===================================
+local SettingsTab = Window:Tab("Settings")
 
--- Contoh Toggle
-Tabs.Main:AddToggle("MyToggle", {
-    Title = "Auto Farm",
-    Default = false,
-    Callback = function(Value)
-        print("Auto Farm:", Value)
-    end
-})
+-- Ini dia fitur custom yang kamu minta:
+-- Tombol-tombol untuk ganti tema secara langsung
+SettingsTab:ThemeSelector()
 
--- Contoh Slider
-Tabs.Main:AddSlider("Slider", {
-    Title = "WalkSpeed",
-    Default = 16,
-    Min = 16,
-    Max = 100,
-    Rounding = 1,
-    Callback = function(Value)
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
-    end
-})
-
--- Finalisasi
-Window:SelectTab(1)
-Fluent:Notify({
-    Title = "Werskieee Hub",
-    Content = "Script Loaded Successfully",
-    Duration = 5
-})
+SettingsTab:Button("Unload UI", function()
+    game.CoreGui:FindFirstChild("CustomUI"):Destroy()
+end)
