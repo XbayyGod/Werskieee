@@ -2,8 +2,19 @@ local Owner = "XbayyGod"
 local Repo = "Werskieee"
 local Branch = "main"
 
-local function GetUrl(scriptName)
-    return string.format("https://raw.githubusercontent.com/%s/%s/%s/%s", Owner, Repo, Branch, scriptName)
+local GitHubToken = "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" 
+
+local function GetPrivateScript(scriptName)
+    local url = string.format("https://raw.githubusercontent.com/%s/%s/%s/%s", Owner, Repo, Branch, scriptName)
+    -- Pake Request biar bisa input Header Authorization
+    local response = request({
+        Url = url,
+        Method = "GET",
+        Headers = {
+            ["Authorization"] = "token " .. GitHubToken
+        }
+    })
+    return response.Body
 end
 
 -- Load UI Manager dari Repo lu
@@ -118,3 +129,5 @@ ToolsGroup:Button("Unload UI", function()
     local plrGui = game.Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubFinalFix")
     if plrGui then plrGui:Destroy() end
 end)
+
+
