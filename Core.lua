@@ -7,11 +7,11 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local function GetUrl(scriptName)
-    return string.format("https://raw.githubusercontent.com/%s/%s/%s/%s", Owner, Repo, Branch, scriptName)
+    -- Tambahin timestamp juga disini biar UI Manager ke-refresh
+    return string.format("https://raw.githubusercontent.com/%s/%s/%s/%s?t=%s", Owner, Repo, Branch, scriptName, tostring(os.time()))
 end
 
--- [OPTIMISASI 1] Load UI Manager
--- Pastikan UIManager juga cepat, tapi di sini kita hanya bisa optimasi pemanggilannya
+-- Load UI Manager
 local success, UI = pcall(function()
     return loadstring(game:HttpGet(GetUrl("UIManager.lua")))()
 end)
