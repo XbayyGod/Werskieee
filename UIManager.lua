@@ -1,5 +1,5 @@
 -- [[ Filename: UIManager.lua ]]
--- VERSION: CENTER BUTTON & CLEAN TOGGLE
+-- VERSION: NO HOVER ON TOGGLE (STATIC), HOVER ON BUTTON KEPT
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -183,7 +183,7 @@ function Library:CreateWindow(title_ignored)
             local isOpened = true
             local GAP_SIZE = 25 
             
-            -- 1. CARD (Wadah Utama)
+            -- 1. CARD
             local GroupCard = Create("Frame", {
                 Parent = ParentFrame, 
                 Size = UDim2.new(1, 0, 0, 48), 
@@ -280,7 +280,7 @@ function Library:CreateWindow(title_ignored)
             return CreateElements(Container)
         end
         
-        -- [STYLE BUTTON "CENTERED TEXT"]
+        -- [STYLE BUTTON "CENTERED TEXT" WITH HOVER]
         function Elements:Button(text, callback)
             local B = Create("TextButton", {
                 Parent = ParentFrame, Text = "", Size = UDim2.new(1, 0, 0, 36), AutoButtonColor = false, 
@@ -293,7 +293,6 @@ function Library:CreateWindow(title_ignored)
             ApplyTheme(B, "BackgroundColor3", "ControlBg")
             ApplyTheme(Stroke, "Color", "ControlStroke")
             
-            -- [FIX] TextXAlignment = Center, Hapus PaddingLeft
             local L = Create("TextLabel", {
                 Parent = B, Text = text, Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1,
                 Font = Enum.Font.GothamMedium, TextSize = 14, 
@@ -301,6 +300,7 @@ function Library:CreateWindow(title_ignored)
             })
             ApplyTheme(L, "TextColor3", "Text")
             
+            -- Hover tetap ada (di pagein/dipakein)
             B.MouseEnter:Connect(function() 
                 TweenService:Create(B, TweenInfo.new(0.2), {BackgroundColor3 = Library.CurrentTheme.Hover}):Play()
                 ApplyTheme(L, "TextColor3", "Accent")
@@ -318,7 +318,7 @@ function Library:CreateWindow(title_ignored)
             end)
         end
 
-        -- [STYLE TOGGLE "NO BG"]
+        -- [STYLE TOGGLE "NO BG & NO HOVER ANIM"]
         function Elements:Toggle(text, default, callback)
             local tog = default or false
             local B = Create("TextButton", {
@@ -327,8 +327,6 @@ function Library:CreateWindow(title_ignored)
                 BorderSizePixel = 0
             })
 
-            -- UIStroke dihapus biar ga ada kotak
-            
             local L = Create("TextLabel", {
                 Parent = B, Text = text, Size = UDim2.new(1, -50, 1, 0), Position = UDim2.new(0, 0, 0, 0),
                 Font = Enum.Font.GothamMedium, TextSize = 14, TextXAlignment = Enum.TextXAlignment.Left, BackgroundTransparency = 1
@@ -336,9 +334,8 @@ function Library:CreateWindow(title_ignored)
             Create("UIPadding", {Parent = L, PaddingLeft = UDim.new(0, 10)})
             ApplyTheme(L, "TextColor3", "Text")
             
-            -- Highlight Text pas hover karena gada background
-            B.MouseEnter:Connect(function() ApplyTheme(L, "TextColor3", "Accent") end)
-            B.MouseLeave:Connect(function() ApplyTheme(L, "TextColor3", "Text") end)
+            -- [REMOVED] MouseEnter/Leave events dihapus sesuai request (gak guna)
+            -- Jadi teks akan tetap warna "Text" walaupun di-hover.
 
             local Switch = Create("Frame", {Parent = B, Size = UDim2.new(0, 38, 0, 20), Position = UDim2.new(1, -48, 0.5, -10)})
             Create("UICorner", {Parent = Switch, CornerRadius = UDim.new(1, 10)})

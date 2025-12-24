@@ -76,7 +76,7 @@ local FishGroup = MainTab:Group("Fishing")
 local autoEquipLoop = false
 local equipConnection -- Variable buat nyimpen koneksi loop biar bersih
 
-FishGroup:Toggle("Always Equip Rod", false, function(Value)
+FishGroup:Toggle("Auto Equip Rod", false, function(Value)
     autoEquipLoop = Value
     
     if Value then
