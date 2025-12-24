@@ -2,19 +2,8 @@ local Owner = "XbayyGod"
 local Repo = "Werskieee"
 local Branch = "main"
 
-local GitHubToken = "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" 
-
-local function GetPrivateScript(scriptName)
-    local url = string.format("https://raw.githubusercontent.com/%s/%s/%s/%s", Owner, Repo, Branch, scriptName)
-    -- Pake Request biar bisa input Header Authorization
-    local response = request({
-        Url = url,
-        Method = "GET",
-        Headers = {
-            ["Authorization"] = "token " .. GitHubToken
-        }
-    })
-    return response.Body
+local function GetUrl(scriptName)
+    return string.format("https://raw.githubusercontent.com/%s/%s/%s/%s", Owner, Repo, Branch, scriptName)
 end
 
 -- Load UI Manager dari Repo lu
@@ -59,16 +48,6 @@ local MainTab = Window:Tab("Main")
 local FishGroup = MainTab:Group("Fishing")
 
 -- 1. Auto Fish (Update State On/Off)
--- FishGroup:Toggle("Auto Fishing", false, function(Value)
---     -- Logic: Kirim sinyal True/False ke server sekali aja pas tombol ditekan
---     local remote = getSmartRemote("Function", "UpdateAutoFishingState")
---     if remote then
---         remote:InvokeServer(Value)
---         print("Auto Fish set to:", Value)
---     else
---         warn("Remote Auto Fishing tidak ditemukan!")
---     end
--- end)
 
 -- 2. Always Equip Rod (Looping Toggle)
 local autoEquipLoop = false
@@ -129,5 +108,3 @@ ToolsGroup:Button("Unload UI", function()
     local plrGui = game.Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubFinalFix")
     if plrGui then plrGui:Destroy() end
 end)
-
-
