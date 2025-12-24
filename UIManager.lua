@@ -104,7 +104,7 @@ function Library:CreateWindow(title_ignored)
         Font = Enum.Font.GothamBold, TextSize = 18, TextXAlignment = Enum.TextXAlignment.Left, BackgroundTransparency = 1
     })
     local function UpdateTitle()
-        TitleLbl.Text = string.format('<font color="%s">Flawy HUB</font> <font color="%s">| BETA 0.2</font>', toHex(Library.CurrentTheme.Accent), toHex(Library.CurrentTheme.SubText))
+        TitleLbl.Text = string.format('<font color="%s">Flawy HUB</font> <font color="%s">| BETA 0.1</font>', toHex(Library.CurrentTheme.Accent), toHex(Library.CurrentTheme.SubText))
     end
     table.insert(Library.ThemeCallbacks, UpdateTitle)
     UpdateTitle()
