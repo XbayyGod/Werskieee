@@ -2,25 +2,43 @@ local Owner = "XbayyGod"
 local Repo = "Werskieee"
 local Branch = "main"
 
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
 local function GetUrl(scriptName)
     return string.format("https://raw.githubusercontent.com/%s/%s/%s/%s", Owner, Repo, Branch, scriptName)
 end
 
--- Load UI Manager dari Repo lu
-local UI = loadstring(game:HttpGet(GetUrl("UIManager.lua")))() 
+-- [OPTIMISASI 1] Load UI Manager
+-- Pastikan UIManager juga cepat, tapi di sini kita hanya bisa optimasi pemanggilannya
+local success, UI = pcall(function()
+    return loadstring(game:HttpGet(GetUrl("UIManager.lua")))()
+end)
+
+if not success then 
+    warn("Gagal load UI Manager!") 
+    return 
+end
+
 local Window = UI:CreateWindow("Hub") 
 
 -- =============================================
--- HELPER FUNCTION (SMART REMOTE FINDER)
+-- HELPER FUNCTION (OPTIMIZED SMART REMOTE)
 -- =============================================
--- Fungsi ini wajib ada biar lu ga capek ganti path kalau game update
+local RemoteCache = {} -- Kita simpan remote yang sudah ketemu disini
+
 local function getSmartRemote(type, remoteName)
-    local rs = game:GetService("ReplicatedStorage")
-    if rs:FindFirstChild("Packages") and rs.Packages:FindFirstChild("_Index") then
-        local packages = rs.Packages._Index
+    -- [OPTIMISASI 2] Cek Cache dulu. Kalau sudah pernah dicari, langsung pakai (Gak perlu looping lagi)
+    if RemoteCache[remoteName] then
+        return RemoteCache[remoteName]
+    end
+
+    if ReplicatedStorage:FindFirstChild("Packages") and ReplicatedStorage.Packages:FindFirstChild("_Index") then
+        local packages = ReplicatedStorage.Packages._Index
         local netFolder = nil
         
-        -- Cari folder yang namanya ada "sleitnick_net"
+        -- Cari folder "sleitnick_net"
         for _, v in pairs(packages:GetChildren()) do
             if v.Name:match("sleitnick_net") then
                 netFolder = v
@@ -29,10 +47,17 @@ local function getSmartRemote(type, remoteName)
         end
 
         if netFolder and netFolder:FindFirstChild("net") then
+            local targetRemote
             if type == "Function" then
-                return netFolder.net:FindFirstChild("RF/" .. remoteName)
+                targetRemote = netFolder.net:FindFirstChild("RF/" .. remoteName)
             elseif type == "Event" then
-                return netFolder.net:FindFirstChild("RE/" .. remoteName)
+                targetRemote = netFolder.net:FindFirstChild("RE/" .. remoteName)
+            end
+
+            -- Simpan ke cache biar besok2 gampang
+            if targetRemote then
+                RemoteCache[remoteName] = targetRemote
+                return targetRemote
             end
         end
     end
@@ -47,31 +72,40 @@ local MainTab = Window:Tab("Main")
 -- >> GROUP: FISHING
 local FishGroup = MainTab:Group("Fishing")
 
--- 1. Auto Fish (Update State On/Off)
-
--- 2. Always Equip Rod (Looping Toggle)
+-- 2. Always Equip Rod (Optimized Loop)
 local autoEquipLoop = false
+local equipConnection -- Variable buat nyimpen koneksi loop biar bersih
+
 FishGroup:Toggle("Always Equip Rod", false, function(Value)
     autoEquipLoop = Value
     
     if Value then
-        -- Jalanin loop di background
+        -- [OPTIMISASI 3] Cari remote SEKALI saja di awal, jangan di dalam loop
+        local equipRemote = getSmartRemote("Event", "EquipToolFromHotbar")
+        
+        if not equipRemote then 
+            warn("Remote Equip tidak ditemukan!")
+            return 
+        end
+
+        -- Pakai task.spawn dengan loop yang lebih efisien
         task.spawn(function()
             while autoEquipLoop do
-                task.wait(1) -- Cek setiap 1 detik
+                local player = Players.LocalPlayer
                 
-                local player = game.Players.LocalPlayer
-                local char = player.Character
-                
-                -- Kalau karakter ada TAPI gak pegang tool
-                if char and not char:FindFirstChildWhichIsA("Tool") then
-                    local remote = getSmartRemote("Event", "EquipToolFromHotbar")
-                    if remote then
-                        remote:FireServer(1) -- Paksa Equip Slot 1
+                -- Pastikan karakter ada baru cek tool
+                if player and player.Character then
+                    -- Cek logic tanpa variable berlebihan
+                    if not player.Character:FindFirstChildWhichIsA("Tool") then
+                        equipRemote:FireServer(1) -- Pakai remote yang sudah dicache
                     end
                 end
+                
+                task.wait(1) -- Delay 1 detik
             end
         end)
+    else
+        -- Logic stop loop sudah dihandle variable 'autoEquipLoop'
     end
 end)
 
@@ -79,16 +113,17 @@ end)
 local TeleportGroup = MainTab:Group("Teleports")
 
 TeleportGroup:Button("Teleport Altar 1", function()
-    local player = game.Players.LocalPlayer
+    local player = Players.LocalPlayer
     if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
         local root = player.Character.HumanoidRootPart
         
-        -- Cek map
-        if workspace:FindFirstChild("! ENCHANTING ALTAR !") and workspace["! ENCHANTING ALTAR !"]:FindFirstChild("Stand") then
-            local target = workspace["! ENCHANTING ALTAR !"].Stand
-            -- Teleport logic (Di atas stand dikit + hadap bener)
+        -- Cek map lebih cepat
+        local mapFolder = workspace:FindFirstChild("! ENCHANTING ALTAR !")
+        if mapFolder and mapFolder:FindFirstChild("Stand") then
+            local target = mapFolder.Stand
             root.CFrame = (target.CFrame * CFrame.Angles(0, math.rad(-90), 0)) + Vector3.new(0, 3, 0)
         else
+            -- [Fitur Tambahan] Notifikasi UI kalau gagal (Optional)
             warn("Tempat 'Enchanting Altar' ga ketemu bos!")
         end
     end
@@ -101,10 +136,12 @@ local UtilTab = Window:Tab("Utilities")
 local ToolsGroup = UtilTab:Group("Debug Tools")
 
 ToolsGroup:Button("Unload UI", function()
-    -- Hapus ScreenGui manual karena UIManager lu belum ada fungsi Destroy window publik
     local core = game:GetService("CoreGui"):FindFirstChild("WerskieeeHubFinalFix")
     if core then core:Destroy() end
     
-    local plrGui = game.Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubFinalFix")
+    local plrGui = Players.LocalPlayer.PlayerGui:FindFirstChild("WerskieeeHubFinalFix")
     if plrGui then plrGui:Destroy() end
+    
+    -- Matikan semua loop
+    autoEquipLoop = false
 end)
