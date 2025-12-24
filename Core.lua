@@ -45,19 +45,19 @@ end
 local MainTab = Window:Tab("Main")
 
 -- >> GROUP: FISHING
-local FishGroup = MainTab:Group("Fishing Automation")
+local FishGroup = MainTab:Group("Fishing")
 
 -- 1. Auto Fish (Update State On/Off)
-FishGroup:Toggle("Auto Fishing", false, function(Value)
-    -- Logic: Kirim sinyal True/False ke server sekali aja pas tombol ditekan
-    local remote = getSmartRemote("Function", "UpdateAutoFishingState")
-    if remote then
-        remote:InvokeServer(Value)
-        print("Auto Fish set to:", Value)
-    else
-        warn("Remote Auto Fishing tidak ditemukan!")
-    end
-end)
+-- FishGroup:Toggle("Auto Fishing", false, function(Value)
+--     -- Logic: Kirim sinyal True/False ke server sekali aja pas tombol ditekan
+--     local remote = getSmartRemote("Function", "UpdateAutoFishingState")
+--     if remote then
+--         remote:InvokeServer(Value)
+--         print("Auto Fish set to:", Value)
+--     else
+--         warn("Remote Auto Fishing tidak ditemukan!")
+--     end
+-- end)
 
 -- 2. Always Equip Rod (Looping Toggle)
 local autoEquipLoop = false
