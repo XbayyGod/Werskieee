@@ -1,5 +1,5 @@
 -- [[ Filename: UIManager.lua ]]
--- VERSION: CARD STYLE & BIGGER FONTS
+-- VERSION: CENTER BUTTON & CLEAN TOGGLE
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -16,7 +16,7 @@ Library.Themes = {
         Main        = Color3.fromRGB(20, 20, 20),
         Header      = Color3.fromRGB(25, 25, 25),
         Sidebar     = Color3.fromRGB(25, 25, 25),
-        CardBg      = Color3.fromRGB(32, 32, 32), -- Background Group utama
+        CardBg      = Color3.fromRGB(32, 32, 32),
         Text        = Color3.fromRGB(255, 255, 255),
         SubText     = Color3.fromRGB(170, 170, 170),
         Accent      = Color3.fromRGB(115, 100, 255),
@@ -25,8 +25,8 @@ Library.Themes = {
         Dropdown    = Color3.fromRGB(40, 40, 40),
         ControlIcon = Color3.fromRGB(200, 200, 200),
         ControlHover= Color3.fromRGB(60, 60, 60),
-        ControlBg   = Color3.fromRGB(38, 38, 38), -- Background untuk Button/Toggle (Child)
-        ControlStroke = Color3.fromRGB(55, 55, 55) -- Garis pinggir child
+        ControlBg   = Color3.fromRGB(38, 38, 38),
+        ControlStroke = Color3.fromRGB(55, 55, 55)
     }
 }
 Library.CurrentTheme = Library.Themes.Midnight
@@ -70,7 +70,7 @@ function Library:CreateWindow(title_ignored)
     local Gui = Create("ScreenGui", {Name = "WerskieeeHubFinalFix", Parent = TargetParent, ZIndexBehavior = Enum.ZIndexBehavior.Sibling, ResetOnSpawn = false})
     
     local Main = Create("Frame", {
-        Parent = Gui, Size = UDim2.fromOffset(650, 450), Position = UDim2.fromScale(0.5, 0.5), -- Size diperbesar dikit biar lega
+        Parent = Gui, Size = UDim2.fromOffset(650, 450), Position = UDim2.fromScale(0.5, 0.5),
         AnchorPoint = Vector2.new(0.5, 0.5), BorderSizePixel = 0, ClipsDescendants = true
     })
     Create("UICorner", {Parent = Main, CornerRadius = UDim.new(0, 10)})
@@ -178,7 +178,7 @@ function Library:CreateWindow(title_ignored)
     local function CreateElements(ParentFrame)
         local Elements = {}
 
-        -- >> GROUP (DENGAN SPACER FISIK)
+        -- >> GROUP
         function Elements:Group(text)
             local isOpened = true
             local GAP_SIZE = 25 
@@ -186,7 +186,7 @@ function Library:CreateWindow(title_ignored)
             -- 1. CARD (Wadah Utama)
             local GroupCard = Create("Frame", {
                 Parent = ParentFrame, 
-                Size = UDim2.new(1, 0, 0, 48), -- Tinggi Header sedikit ditambah
+                Size = UDim2.new(1, 0, 0, 48), 
                 BackgroundTransparency = 0,
                 ClipsDescendants = true,
                 BorderSizePixel = 0
@@ -205,13 +205,12 @@ function Library:CreateWindow(title_ignored)
                 BackgroundTransparency = 1
             })
             
-            -- [FIX] Posisi Text digeser ke kiri (0, 4) & Font diperbesar (15)
             local Label = Create("TextLabel", {
                 Parent = HeaderFrame, Text = text, Size = UDim2.new(1, -40, 1, 0), Position = UDim2.new(0, 4, 0, 0),
                 TextXAlignment = Enum.TextXAlignment.Left, Font = Enum.Font.GothamBold, 
                 TextSize = 15, BackgroundTransparency = 1
             })
-            Create("UIPadding", {Parent = Label, PaddingLeft = UDim.new(0, 10)}) -- Extra padding biar rapi
+            Create("UIPadding", {Parent = Label, PaddingLeft = UDim.new(0, 10)})
             ApplyTheme(Label, "TextColor3", "Accent")
 
             local Arrow = Create("ImageLabel", {
@@ -233,10 +232,9 @@ function Library:CreateWindow(title_ignored)
                 BackgroundTransparency = 1, Visible = true 
             })
             local ContainerLayout = Create("UIListLayout", {
-                Parent = Container, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 6) -- Jarak antar item diperbesar
+                Parent = Container, SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 6)
             })
             
-            -- Spacer Fisik
             local Spacer = Create("Frame", {
                 Parent = Container, Size = UDim2.new(1, 0, 0, GAP_SIZE), 
                 BackgroundTransparency = 1, LayoutOrder = -999
@@ -246,7 +244,7 @@ function Library:CreateWindow(title_ignored)
                 Parent = Container, 
                 PaddingTop = UDim.new(0, 0),
                 PaddingBottom = UDim.new(0, 15),
-                PaddingLeft = UDim.new(0, 12), -- Padding kiri container
+                PaddingLeft = UDim.new(0, 12), 
                 PaddingRight = UDim.new(0, 12)
             })
 
@@ -282,28 +280,27 @@ function Library:CreateWindow(title_ignored)
             return CreateElements(Container)
         end
         
-        -- [STYLE BUTTON "CHILD"]
+        -- [STYLE BUTTON "CENTERED TEXT"]
         function Elements:Button(text, callback)
             local B = Create("TextButton", {
                 Parent = ParentFrame, Text = "", Size = UDim2.new(1, 0, 0, 36), AutoButtonColor = false, 
                 BackgroundTransparency = 0, BorderSizePixel = 0 
             })
             
-            -- Styling Button biar kaya "Child" / Card kecil
             Create("UICorner", {Parent = B, CornerRadius = UDim.new(0, 6)})
             local Stroke = Create("UIStroke", {Parent = B, Thickness = 1, Transparency = 0})
             
             ApplyTheme(B, "BackgroundColor3", "ControlBg")
             ApplyTheme(Stroke, "Color", "ControlStroke")
             
+            -- [FIX] TextXAlignment = Center, Hapus PaddingLeft
             local L = Create("TextLabel", {
                 Parent = B, Text = text, Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1,
-                Font = Enum.Font.GothamMedium, TextSize = 14, TextXAlignment = Enum.TextXAlignment.Left -- Font diperbesar ke 14
+                Font = Enum.Font.GothamMedium, TextSize = 14, 
+                TextXAlignment = Enum.TextXAlignment.Center 
             })
-            Create("UIPadding", {Parent = L, PaddingLeft = UDim.new(0, 10)})
             ApplyTheme(L, "TextColor3", "Text")
             
-            -- Efek Hover
             B.MouseEnter:Connect(function() 
                 TweenService:Create(B, TweenInfo.new(0.2), {BackgroundColor3 = Library.CurrentTheme.Hover}):Play()
                 ApplyTheme(L, "TextColor3", "Accent")
@@ -321,19 +318,16 @@ function Library:CreateWindow(title_ignored)
             end)
         end
 
-        -- [STYLE TOGGLE "CHILD"]
+        -- [STYLE TOGGLE "NO BG"]
         function Elements:Toggle(text, default, callback)
             local tog = default or false
             local B = Create("TextButton", {
                 Parent = ParentFrame, Text = "", Size = UDim2.new(1, 0, 0, 36), AutoButtonColor = false,
-                BackgroundTransparency = 0, BorderSizePixel = 0
+                BackgroundTransparency = 1, -- Hapus Background
+                BorderSizePixel = 0
             })
 
-            -- Styling Toggle biar sama kaya Button
-            Create("UICorner", {Parent = B, CornerRadius = UDim.new(0, 6)})
-            local Stroke = Create("UIStroke", {Parent = B, Thickness = 1})
-            ApplyTheme(B, "BackgroundColor3", "ControlBg")
-            ApplyTheme(Stroke, "Color", "ControlStroke")
+            -- UIStroke dihapus biar ga ada kotak
             
             local L = Create("TextLabel", {
                 Parent = B, Text = text, Size = UDim2.new(1, -50, 1, 0), Position = UDim2.new(0, 0, 0, 0),
@@ -342,9 +336,13 @@ function Library:CreateWindow(title_ignored)
             Create("UIPadding", {Parent = L, PaddingLeft = UDim.new(0, 10)})
             ApplyTheme(L, "TextColor3", "Text")
             
+            -- Highlight Text pas hover karena gada background
+            B.MouseEnter:Connect(function() ApplyTheme(L, "TextColor3", "Accent") end)
+            B.MouseLeave:Connect(function() ApplyTheme(L, "TextColor3", "Text") end)
+
             local Switch = Create("Frame", {Parent = B, Size = UDim2.new(0, 38, 0, 20), Position = UDim2.new(1, -48, 0.5, -10)})
             Create("UICorner", {Parent = Switch, CornerRadius = UDim.new(1, 10)})
-            ApplyTheme(Switch, "BackgroundColor3", "Dropdown") -- Warna dasar switch
+            ApplyTheme(Switch, "BackgroundColor3", "Dropdown") 
 
             local Knob = Create("Frame", {Parent = Switch, Size = UDim2.new(0, 16, 0, 16), Position = UDim2.new(0, 2, 0.5, -8), BackgroundColor3 = Color3.new(1,1,1)})
             Create("UICorner", {Parent = Knob, CornerRadius = UDim.new(1, 10)})
@@ -365,7 +363,6 @@ function Library:CreateWindow(title_ignored)
         end
 
         function Elements:Slider(text, min, max, default, callback)
-            -- Untuk Slider, kita juga bungkus biar konsisten
             local val = default or min
             local F = Create("Frame", {
                 Parent = ParentFrame, Size = UDim2.new(1, 0, 0, 50), 
@@ -492,7 +489,7 @@ function Library:CreateWindow(title_ignored)
 
     function Window:Tab(name)
         local TabBtn = Create("TextButton", {
-            Parent = TabContainer, Text = name, Size = UDim2.new(1, 0, 0, 42), -- Tab sedikit diperbesar
+            Parent = TabContainer, Text = name, Size = UDim2.new(1, 0, 0, 42),
             Font = Enum.Font.GothamMedium, TextSize = 15, AutoButtonColor = false, BackgroundTransparency = 1
         })
         Create("UICorner", {Parent = TabBtn, CornerRadius = UDim.new(0, 8)})
