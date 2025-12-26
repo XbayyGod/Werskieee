@@ -110,10 +110,12 @@ FishGroup:Toggle("Auto Equip Rod", false, function(Value)
 end)
 
 -- >> GROUP: TELEPORTS
+-- >> GROUP: TELEPORTS
 local TeleportGroup = MainTab:Group("Teleports")
 
+-- [1] TELEPORT ALTAR (YANG LAMA)
 TeleportGroup:Button("Teleport Altar 1", function()
-    local player = Players.LocalPlayer
+    local player = game.Players.LocalPlayer
     if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
         local root = player.Character.HumanoidRootPart
         
@@ -123,8 +125,45 @@ TeleportGroup:Button("Teleport Altar 1", function()
             local target = mapFolder.Stand
             root.CFrame = (target.CFrame * CFrame.Angles(0, math.rad(-90), 0)) + Vector3.new(0, 3, 0)
         else
-            -- [Fitur Tambahan] Notifikasi UI kalau gagal (Optional)
             warn("Tempat 'Enchanting Altar' ga ketemu bos!")
+        end
+    end
+end)
+
+-- [2] TELEPORT LOCATION 3 (YANG BARU)
+TeleportGroup:Button("Teleport Location 3", function()
+    local player = game.Players.LocalPlayer
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        local root = player.Character.HumanoidRootPart
+        
+        -- Ambil Folder Locations
+        local locFolder = workspace:FindFirstChild("Locations")
+        
+        if locFolder then
+            -- Ambil anak ke-3 sesuai request lu
+            local children = locFolder:GetChildren()
+            local target = children[3] 
+            
+            if target then
+                -- Auto detect dia Model atau Part biar ga error
+                local targetCFrame
+                if target:IsA("Model") then
+                    targetCFrame = target:GetPivot()
+                elseif target:IsA("BasePart") then
+                    targetCFrame = target.CFrame
+                end
+                
+                if targetCFrame then
+                    -- Teleport + 3 stud ke atas
+                    root.CFrame = targetCFrame * CFrame.new(0, 3, 0)
+                else
+                    warn("Target ke-3 bukan Part/Model, ga bisa diinjek!")
+                end
+            else
+                warn("Isi folder Locations kurang dari 3 item!")
+            end
+        else
+            warn("Folder 'Locations' ga ketemu di Workspace!")
         end
     end
 end)
